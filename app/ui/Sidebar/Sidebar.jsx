@@ -1,6 +1,6 @@
 "use client";
 import { motion } from "framer-motion";
-import SidebarItem from "./sidebarItem";
+import SidebarItem from "./SidebarItem";
 
 export default function SideBar() {
   const menuItems = ["Dashboard", "Team-Settings", "Help-Feedback", "LogOut"];
