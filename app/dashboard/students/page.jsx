@@ -2,7 +2,7 @@ import StudentsTable from "@/app/ui/StudentsTable/StudentsTable";
 import axios from "axios";
 
 async function getStudents() {
-  const res = await axios.get("http://localhost:3000/api/students");
+  const res = await axios.get("https://lms-test-pi.vercel.app/api/students");
   const { students } = res.data;
   return students;
 }
