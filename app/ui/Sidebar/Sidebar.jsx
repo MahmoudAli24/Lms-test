@@ -6,7 +6,7 @@ export default function SideBar() {
   const menuItems = ["Dashboard", "Students", "Help-Feedback", "LogOut"];
   return (
     <motion.div
-      className='w-[250px] h-screen p-3 bg-[#F5F7F9] dark:bg-[#18181b]'
+      className='w-[250px] h-screen p-3 bg-[#F5F7F9] dark:bg-[#18181b] tablet:block hidden'
       initial={{ x: -250 }} // Initial position off-screen
       animate={{ x: 0 }} // Move to the center of the screen
       transition={{ duration: 0.5, type: "spring", stiffness: 70 }}

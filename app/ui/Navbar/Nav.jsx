@@ -15,18 +15,7 @@ import { Suspense, useState } from "react";
 import ThemeSwitcherSkeleton from "../theme/ThemeSwitcherSkeleton";
 function Nav() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const menuItems = [
-    "Profile",
-    "Dashboard",
-    "Activity",
-    "Analytics",
-    "System",
-    "Deployments",
-    "My Settings",
-    "Team Settings",
-    "Help & Feedback",
-    "Log Out",
-  ];
+  const menuItems = ["Home", "Dashboard", "Students"];
   return (
     <Navbar
       maxWidth='2xl'
@@ -35,7 +24,7 @@ function Nav() {
       <NavbarContent>
         <NavbarMenuToggle
           aria-label={isMenuOpen ? "Close menu" : "Open menu"}
-          className='sm:hidden'
+          className='tablet:hidden block'
         />
         <NavbarBrand>
           <h1 className='text-inherit text-2xl font-medium text-blue-500'>
@@ -48,12 +37,6 @@ function Nav() {
         <NavbarItem className='flex gap-3 items-center'>
           <Suspense fallback={<ThemeSwitcherSkeleton />}>
             <ThemeSwitcher />
-          </Suspense>
-
-          <Suspense fallback={<ThemeSwitcherSkeleton />}>
-            <Button as={Link} color='primary' href='/dashboard' variant='flat'>
-              Sign Up
-            </Button>
           </Suspense>
         </NavbarItem>
       </NavbarContent>
@@ -69,7 +52,13 @@ function Nav() {
                   : "foreground"
               }
               className='w-full'
-              href='#'
+              href={
+                item === "Home"
+                  ? "/"
+                  : item === "Dashboard"
+                  ? "/dashboard"
+                  : "/dashboard/students"
+              }
               size='md'
             >
               {item}

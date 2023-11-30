@@ -2,16 +2,9 @@ import SideBar from "../ui/Sidebar/Sidebar";
 
 export default function Layout({ children }) {
   return (
-    <main className='flex'>
+    <main className='tablet:flex'>
       <SideBar />
-      <section
-        style={{
-          width: "calc(100% - 250px)",
-        }}
-        className='p-4'
-      >
-        {children}
-      </section>
+      <section className='p-4 tablet:w-[calc(100%-250px)] '>{children}</section>
     </main>
   );
 }
