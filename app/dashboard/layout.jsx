@@ -4,7 +4,14 @@ export default function Layout({ children }) {
   return (
     <main className='flex'>
       <SideBar />
-      <section className='me-[250px]'>{children}</section>
+      <section
+        style={{
+          width: "calc(100% - 250px)",
+        }}
+        className='p-4'
+      >
+        {children}
+      </section>
     </main>
   );
 }

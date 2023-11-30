@@ -5,8 +5,8 @@ import Link from "next/link";
 
 export default function SidebarItem(props) {
   const path = usePathname();
-  const classes = `block py-2 px-4 border-1 border-[#e6f1fe] rounded-md hover:bg-[#e6f1fe] dark:hover:bg-[#2d2d2d] dark:border-[#2d2d2d] dark:text-[#e6f1fe] `;
-  const activeClasses = `block py-2 px-4 border-1 border-[#e6f1fe] rounded-md bg-[#e6f1fe] dark:bg-[#2d2d2d] dark:border-[#2d2d2d] dark:text-[#e6f1fe]`;
+  const classes = `block py-2 px-4 rounded-md hover:bg-[#000000] hover:text-white dark:hover:bg-[#2d2d2d] dark:border-[#2d2d2d] dark:text-[#e6f1fe] `;
+  const activeClasses = `block py-2 px-4 rounded-md bg-[#000000] text-white dark:bg-[#2d2d2d] dark:border-[#2d2d2d] dark:text-[#e6f1fe]`;
   const isActive = path === props.to;
 
   return (

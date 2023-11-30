@@ -13,8 +13,8 @@ export async function GET() {
 }
 
 export async function POST(req) {
-  const { className, code } = await req.json();
+  const { className, code , groups } = await req.json();
   await dbConnect()
-  const class_ = await Class.create({ className, code })
+  const class_ = await Class.create({ className, code , groups})
   return Response.json({class_})
 }

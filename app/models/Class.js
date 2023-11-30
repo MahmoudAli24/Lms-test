@@ -9,6 +9,7 @@ const classSchema = new Schema({
   groups: [
     {
       name: { type: String, required: true },
+      code: { type: Number, required: true, unique: true },
       student_ids: [{ type: Number, ref: "Student" }],
     },
   ],
