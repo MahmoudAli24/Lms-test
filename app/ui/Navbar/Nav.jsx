@@ -38,6 +38,7 @@ function Nav() {
           <Suspense fallback={<ThemeSwitcherSkeleton />}>
             <ThemeSwitcher />
           </Suspense>
+          <Link href='/dashboard'>Dashboard</Link>
         </NavbarItem>
       </NavbarContent>
       <NavbarMenu>
