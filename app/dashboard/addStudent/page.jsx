@@ -1,5 +1,11 @@
-import React from "react";
+import AddStudentForm from "@/app/ui/AddStudentForm/AddStudentForm";
 
 export default function page() {
-  return <div>Some Thing Else</div>;
+  return (
+    <div>
+      <div className='w-[400px]'>
+        <AddStudentForm />
+      </div>
+    </div>
+  );
 }

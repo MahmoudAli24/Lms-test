@@ -4,4 +4,5 @@ export const WorkSans = Work_Sans({
   subsets: ["latin"],
   display: "swap",
   weight: ["300", "400", "600"],
+  preload: true,
 });

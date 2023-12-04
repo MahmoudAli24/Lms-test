@@ -1,5 +1,6 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
+import getStudents from "@/app/libs/getStudents";
 import {
   Pagination,
   Table,
@@ -10,39 +11,66 @@ import {
   TableRow,
   getKeyValue,
 } from "@nextui-org/react";
+import useSWR from "swr";
 
-export default function StudentsTable({ users }) {
+const fetcher = (...args) => fetch(...args).then((res) => res.json());
+
+export default function StudentsTable() {
+  // const [students, setStudents] = useState([]); // Initialize students state
   const [page, setPage] = useState(1);
-  const [selectedRows, setSelectedRows] = useState([]);
   const rowsPerPage = 5;
-  const pages = Math.ceil(users.length / rowsPerPage);
-
-  const handleSelectionChange = (selected) => {
-    // Convert Set to an array
-    const selectedArray = [...selected];
-
-    // Access the value
-    const selectedValue = selectedArray[0];
-
-    // Now you can use selectedValue as needed
-    console.log("Selected Value:", selectedValue);
-    // You can also update your component state with the selected value if needed
+  const { data } = useSWR(
+    `http://localhost:3000/api/students?page=${page}&rowsPerPage=${rowsPerPage}`,
+    fetcher,
+    { keepPreviousData: true, revalidateOnFocus: false , revalidateOnReconnect: false , revalidateOnMount: true }
+  );
+  const students = () => {
+    if (data) {
+      return data.students;
+    }
+    return [];
   };
 
-  console.log("selectedRows => ", selectedRows);
+  const count = () => {
+    if (data) {
+      return data.count;
+    }
+    return 0;
+  };
 
-  const items = useMemo(() => {
-    const start = (page - 1) * rowsPerPage;
-    const end = start + rowsPerPage;
-    return users.slice(start, end);
-  }, [page, users]);
+  const studentsData = students();
+  const studentsCount = count();
+
+  const pages = useMemo(() => {
+    return studentsCount ? Math.ceil(studentsCount / rowsPerPage) : 1;
+  }, [studentsCount, rowsPerPage]);
+  // const [pages, setPages] = useState(1);
+
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     try {
+  //       const res = await getStudents(page, rowsPerPage);
+  //       const { students: newStudents, count } = res;
+  //       setStudents((prevStudents) => [...prevStudents, ...newStudents]); // Update students state with fetched data
+  //       setPages(Math.ceil(count / rowsPerPage));
+  //     } catch (err) {
+  //       console.log(err);
+  //     }
+  //   };
+  //   fetchData();
+  // }, [page]);
+
+  // const items = useMemo(() => {
+  //   const start = (page - 1) * rowsPerPage;
+  //   const end = start + rowsPerPage;
+  //   return students.slice(start, end);
+  // }, [page, students]);
   return (
     <>
       <Table
         color='primary'
         aria-label='Example table with client side pagination'
         isHeaderSticky
-        onSelectionChange={(selected) => handleSelectionChange(selected)}
         bottomContent={
           <div className='flex w-full justify-center'>
             <Pagination
@@ -64,7 +92,7 @@ export default function StudentsTable({ users }) {
           <TableColumn key='code'>ID</TableColumn>
           <TableColumn key='name'>Name</TableColumn>
         </TableHeader>
-        <TableBody items={items}>
+        <TableBody items={studentsData}>
           {(item) => (
             <TableRow key={item.code}>
               {(columnKey) => (

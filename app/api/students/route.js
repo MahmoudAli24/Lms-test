@@ -2,12 +2,19 @@ import Student from "../../models/Student";
 import Class from "@/app/models/Class";
 import dbConnect from "../../libs/dbConnect";
 import { NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 
-export async function GET() {
+export async function GET(req) {
+  const page = +req.nextUrl.searchParams.get("page");
+  const rowsPerPage = +req.nextUrl.searchParams.get("rowsPerPage");
   await dbConnect();
-  const students = await Student.find();
+  const count = await Student.countDocuments();
+  console.log("page==>", page);
+  const students = await Student.find()
+    .skip((page - 1) * rowsPerPage)
+    .limit(rowsPerPage)
   if (students.length > 0) {
-    return NextResponse.json({ students });
+    return NextResponse.json({ students, count });
   } else {
     return NextResponse.json({ message: "No students found" });
   }
@@ -56,6 +63,8 @@ export async function POST(req) {
       },
       { new: true }
     );
+
+    revalidateTag("students");
 
     return NextResponse.json({ savedStudent });
   } catch (error) {
@@ -123,7 +132,6 @@ export async function PATCH(req) {
     return NextResponse.json({ message: "Internal Server Error" });
   }
 }
-
 
 export async function DELETE(req) {
   const { code } = await req.json();

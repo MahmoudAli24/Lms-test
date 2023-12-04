@@ -1,4 +1,3 @@
-import { Suspense } from "react";
 import { WorkSans } from "./fonts";
 import "./ui/globals.css";
 import { Providers } from "./providers";

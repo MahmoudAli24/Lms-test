@@ -1,22 +1,43 @@
 import StudentsTable from "@/app/ui/StudentsTable/StudentsTable";
-import { Button } from "@nextui-org/react";
-import axios from "axios";
+import { Button, Card, CardBody, CardHeader } from "@nextui-org/react";
 import Link from "next/link";
 
-async function getStudents() {
-  const res = await axios.get("https://lms-test-pi.vercel.app/api/students");
-  const { students } = res.data;
-  return students;
-}
-
 export default async function page() {
-  const students = await getStudents();
   return (
     <>
-      <Button variant='faded' as={Link} href='/dashboard/addStudent'>
-        add Student
-      </Button>
-      <StudentsTable users={students} />
+      <div className='flex flex-wrap gap-3 mb-3'>
+        <Card className='w-[calc(100%/2-0.375rem)]'>
+          <CardHeader>
+            <Button
+              color='success'
+              className='text-white'
+              as={Link}
+              href='/dashboard/addStudent'
+            >
+              Add Student
+            </Button>
+          </CardHeader>
+          <CardBody>
+            <p>Click here to add a new student</p>
+          </CardBody>
+        </Card>
+        <Card className='w-[calc(100%/2-0.375rem)]'>
+          <CardHeader>
+            <Button
+              color='success'
+              className='text-white'
+              as={Link}
+              href='/dashboard/addStudent'
+            >
+              Add Student
+            </Button>
+          </CardHeader>
+          <CardBody>
+            <p>Click here to add a new student</p>
+          </CardBody>
+        </Card>
+      </div>
+      <StudentsTable />
     </>
   );
 }
