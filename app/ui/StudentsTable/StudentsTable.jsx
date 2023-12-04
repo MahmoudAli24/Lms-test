@@ -20,9 +20,14 @@ export default function StudentsTable() {
   const [page, setPage] = useState(1);
   const rowsPerPage = 5;
   const { data } = useSWR(
-    `http://localhost:3000/api/students?page=${page}&rowsPerPage=${rowsPerPage}`,
+    `https://lms-test-pi.vercel.app/api/students?page=${page}&rowsPerPage=${rowsPerPage}`,
     fetcher,
-    { keepPreviousData: true, revalidateOnFocus: false , revalidateOnReconnect: false , revalidateOnMount: true }
+    {
+      keepPreviousData: true,
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      revalidateOnMount: true,
+    }
   );
   const students = () => {
     if (data) {
