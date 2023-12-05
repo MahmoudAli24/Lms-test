@@ -14,6 +14,7 @@ export default async function getStudents(page, rowsPerPage) {
       {
         next: {
           revalidate: 60,
+          cache: "no-store",
         },
       }
     );
