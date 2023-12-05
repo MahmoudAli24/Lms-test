@@ -1,26 +1,36 @@
 "use client";
-import { useMemo, useState, useEffect } from "react";
-import getStudents from "@/app/libs/getStudents";
+import { useMemo, useState, useCallback } from "react";
+import Link from "next/link";
+
 import {
+  Button,
   Pagination,
+  Spinner,
   Table,
   TableBody,
   TableCell,
   TableColumn,
   TableHeader,
   TableRow,
-  getKeyValue,
+  Tooltip,
 } from "@nextui-org/react";
 import useSWR from "swr";
+import { EyeIcon } from "../Icons/EyeIcon";
+import { EditIcon } from "../Icons/EditIcon";
+import { DeleteIcon } from "../Icons/DeleteIcon";
 
 const fetcher = (...args) => fetch(...args).then((res) => res.json());
 
 export default function StudentsTable() {
-  // const [students, setStudents] = useState([]); // Initialize students state
+  const columns = [
+    { name: "ID", uid: "id" },
+    { name: "NAME", uid: "name" },
+    { name: "ACTIONS", uid: "actions" },
+  ];
   const [page, setPage] = useState(1);
   const rowsPerPage = 5;
-  const { data } = useSWR(
-    `https://lms-test-pi.vercel.app/api/students?page=${page}&rowsPerPage=${rowsPerPage}`,
+  const { data , isLoading } = useSWR(
+    `http://localhost:3000/api/students?page=${page}&rowsPerPage=${rowsPerPage}`,
     fetcher,
     {
       keepPreviousData: true,
@@ -49,33 +59,51 @@ export default function StudentsTable() {
   const pages = useMemo(() => {
     return studentsCount ? Math.ceil(studentsCount / rowsPerPage) : 1;
   }, [studentsCount, rowsPerPage]);
-  // const [pages, setPages] = useState(1);
 
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     try {
-  //       const res = await getStudents(page, rowsPerPage);
-  //       const { students: newStudents, count } = res;
-  //       setStudents((prevStudents) => [...prevStudents, ...newStudents]); // Update students state with fetched data
-  //       setPages(Math.ceil(count / rowsPerPage));
-  //     } catch (err) {
-  //       console.log(err);
-  //     }
-  //   };
-  //   fetchData();
-  // }, [page]);
+  const renderCell = useCallback(
+    (item, columnKey) => {
+      const cellValue = studentsData[columnKey];
+      if (columnKey === "actions") {
+        return (
+          <div className='relative flex items-center gap-2'>
+            <Tooltip content='Details'>
+              <Link
+                href={`/dashboard`}
+                className='text-lg text-default-400 cursor-pointer active:opacity-50 bg-transparent'
+              >
+                <EyeIcon />
+              </Link>
+            </Tooltip>
+            <Tooltip content='Edit Student'>
+              <span className='text-lg text-default-400 cursor-pointer active:opacity-50'>
+                <EditIcon />
+              </span>
+            </Tooltip>
+            <Tooltip color='danger' content='Delete Student'>
+              <span className='text-lg text-danger cursor-pointer active:opacity-50'>
+                <DeleteIcon />
+              </span>
+            </Tooltip>
+          </div>
+        );
+      } else if (columnKey === "name") {
+        return <span>{item.name}</span>;
+      } else if (columnKey === "id") {
+        return <span>{item.code}</span>;
+      } else {
+        return cellValue;
+      }
+    },
+    [studentsData]
+  );
 
-  // const items = useMemo(() => {
-  //   const start = (page - 1) * rowsPerPage;
-  //   const end = start + rowsPerPage;
-  //   return students.slice(start, end);
-  // }, [page, students]);
+  const loadingState = isLoading || data.length === 0 ? "loading" : "idle";
+
   return (
     <>
       <Table
         color='primary'
         aria-label='Example table with client side pagination'
-        isHeaderSticky
         bottomContent={
           <div className='flex w-full justify-center'>
             <Pagination
@@ -93,15 +121,31 @@ export default function StudentsTable() {
           wrapper: "min-h-[222px]",
         }}
       >
-        <TableHeader>
-          <TableColumn key='code'>ID</TableColumn>
-          <TableColumn key='name'>Name</TableColumn>
+        <TableHeader columns={columns}>
+          {(column) => (
+            <TableColumn
+              key={column.uid}
+              align={
+                column.uid === "actions"
+                  ? "right"
+                  : column.uid === "id"
+                  ? "left"
+                  : "center"
+              }
+            >
+              {column.name}
+            </TableColumn>
+          )}
         </TableHeader>
-        <TableBody items={studentsData}>
+        <TableBody
+          items={studentsData}
+          loadingContent={<Spinner />}
+          loadingState={loadingState}
+        >
           {(item) => (
             <TableRow key={item.code}>
               {(columnKey) => (
-                <TableCell>{getKeyValue(item, columnKey)}</TableCell>
+                <TableCell>{renderCell(item, columnKey)}</TableCell>
               )}
             </TableRow>
           )}

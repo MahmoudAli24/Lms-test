@@ -8,11 +8,13 @@ export default async function addStudent(formData) {
       class_code: +formData.get("class_code"),
       group_code: +formData.get("group_code"),
     };
-    const res = await axios.post("http://localhost:3000/api/students", data);
+    const res = await axios.post(
+      "https://lms-test-pi.vercel.app/api/students",
+      data
+    );
 
     await new Promise((resolve) => {
       setTimeout(() => {
-
         resolve(true);
       }, 100);
     });

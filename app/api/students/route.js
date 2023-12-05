@@ -9,10 +9,9 @@ export async function GET(req) {
   const rowsPerPage = +req.nextUrl.searchParams.get("rowsPerPage");
   await dbConnect();
   const count = await Student.countDocuments();
-  console.log("page==>", page);
   const students = await Student.find()
     .skip((page - 1) * rowsPerPage)
-    .limit(rowsPerPage)
+    .limit(rowsPerPage);
   if (students.length > 0) {
     return NextResponse.json({ students, count });
   } else {
