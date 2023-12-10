@@ -9,7 +9,7 @@ const nextConfig = {
           { key: "Access-Control-Allow-Credentials", value: "true" },
           {
             key: "Access-Control-Allow-Origin",
-            value: "https://lms-test-pi.vercel.app",
+            value: "https://huhu-test.vercel.app",
           }, // replace this your actual origin
           {
             key: "Access-Control-Allow-Methods",
