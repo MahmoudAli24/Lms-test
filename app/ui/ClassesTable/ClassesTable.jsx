@@ -19,7 +19,7 @@ function ClassesTable() {
   const [page, setPage] = useState(1);
   const rowsPerPage = 5;
 
-  const { data, isLoading } = useSWR(`http://localhost:3000/api/classes?page=${page}&rowsPerPage=${rowsPerPage}`, fetcher, {
+  const { data, isLoading } = useSWR(`https://lms-test-pi.vercel.app/api/classes?page=${page}&rowsPerPage=${rowsPerPage}`, fetcher, {
     keepPreviousData: true,
     revalidateOnFocus: false,
     revalidateOnReconnect: false,

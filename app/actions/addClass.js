@@ -4,7 +4,7 @@ export default async function addClass(formData) {
       name: formData.get("name"),
       group_id: +formData.get("group_id"),
     };
-    const res = await axios.post("http://localhost:3000/api/classes", data);
+    const res = await axios.post("https://lms-test-pi.vercel.app/api/classes", data);
     await new Promise((resolve) => {
       setTimeout(() => {
         resolve(true);
