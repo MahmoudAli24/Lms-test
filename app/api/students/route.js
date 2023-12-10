@@ -35,7 +35,7 @@ export async function POST(req) {
       homework: [],
     });
     const classDocument = await Class.findById(studentData.class_code);
-    if (!classDocument) {
+    if (!classDocument ) {
       return NextResponse.json({ error: "Class not found" }, { status: 404 });
     }
     const groupDocument = await Group.findById(studentData.group_code);
