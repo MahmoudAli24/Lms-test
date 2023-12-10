@@ -29,7 +29,7 @@ export default function StudentsTable() {
   ];
   const [page, setPage] = useState(1);
   const rowsPerPage = 5;
-  const { data , isLoading } = useSWR(
+  const { data, isLoading } = useSWR(
     `http://localhost:3000/api/students?page=${page}&rowsPerPage=${rowsPerPage}`,
     fetcher,
     {
@@ -68,7 +68,7 @@ export default function StudentsTable() {
           <div className='relative flex items-center gap-2'>
             <Tooltip content='Details'>
               <Link
-                href={`/dashboard`}
+                href={`/dashboard/students/${item.code}`}
                 className='text-lg text-default-400 cursor-pointer active:opacity-50 bg-transparent'
               >
                 <EyeIcon />
@@ -97,13 +97,29 @@ export default function StudentsTable() {
     [studentsData]
   );
 
-  const loadingState = isLoading || data.length === 0 ? "loading" : "idle";
+  const loadingState = isLoading || data.length === 0 || data === undefined  ? "loading" : "idle";
+
+  const topContent = useMemo(() => {
+    return (
+      <Button
+        as={Link}
+        href={`/dashboard/addStudent`}
+        className='w-fit'
+        color='primary'
+        variant='shadow'
+      >
+        Add Student
+      </Button>
+    );
+  }, []);
 
   return (
     <>
       <Table
         color='primary'
         aria-label='Example table with client side pagination'
+        topContent={topContent}
+        topContentPlacement='outside'
         bottomContent={
           <div className='flex w-full justify-center'>
             <Pagination
@@ -138,9 +154,10 @@ export default function StudentsTable() {
           )}
         </TableHeader>
         <TableBody
-          items={studentsData}
+          items={studentsData ? studentsData : []}
           loadingContent={<Spinner />}
           loadingState={loadingState}
+          emptyContent={"No rows to display."}
         >
           {(item) => (
             <TableRow key={item.code}>

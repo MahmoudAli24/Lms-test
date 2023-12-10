@@ -5,8 +5,8 @@ const { Schema } = mongoose;
 const studentSchema = new Schema({
   code: { type: Number, required: true, unique: true },
   name: { type: String, required: true },
-  class_code: { type: Number, ref: "Class", required: true },
-  group_code: { type: Number, required: true, ref: "Class.groups.code"},
+  class_code: { type: Schema.Types.ObjectId, ref: "Class", required: true },
+  group_code: { type: Schema.Types.ObjectId, ref: "Group", required: true },
   attendance: [{ date: Date, status: String }],
   examGrades: [
     { exam_id: { type: Schema.Types.ObjectId, ref: "Exam" }, grade: Number },

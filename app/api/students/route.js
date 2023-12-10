@@ -1,8 +1,8 @@
 import Student from "../../models/Student";
 import Class from "@/app/models/Class";
+import Group from "@/app/models/Group";
 import dbConnect from "../../libs/dbConnect";
 import { NextResponse } from "next/server";
-import { revalidateTag } from "next/cache";
 
 export async function GET(req) {
   const page = +req.nextUrl.searchParams.get("page");
@@ -34,37 +34,27 @@ export async function POST(req) {
       examGrades: [],
       homework: [],
     });
-    const classDocument = await Class.findOne({ code: studentData.class_code });
-
+    const classDocument = await Class.findById(studentData.class_code);
     if (!classDocument) {
-      return Response.json({ message: "Class not found" }, { status: 400 });
+      return NextResponse.json({ error: "Class not found" }, { status: 404 });
     }
-
-    const groupToUpdate = classDocument.groups.find(
-      (group) => group.code === studentData.group_code
-    );
-
-    if (!groupToUpdate) {
-      return NextResponse.json({ message: "Group not found" }, { status: 400 });
+    const groupDocument = await Group.findById(studentData.group_code);
+    if (!groupDocument) {
+      return NextResponse.json({ error: "Group not found" }, { status: 404 });
     }
-
-    // Save the new student
+    // Save the student to the database
     const savedStudent = await newStudent.save();
-
-    // Update the corresponding Class document's student_ids array and group's student_ids
-    const updatedClass = await Class.findOneAndUpdate(
-      { code: studentData.class_code, "groups.code": studentData.group_code },
-      {
-        $push: { student_ids: savedStudent.code },
-        $addToSet: {
-          "groups.$.student_ids": savedStudent.code,
-        },
-      },
+    // Add the student to the class and group
+    await Class.findByIdAndUpdate(
+      studentData.class_code,
+      { $push: { student_ids: savedStudent.code } },
       { new: true }
     );
-
-    revalidateTag("students");
-
+    await Group.findByIdAndUpdate(
+      studentData.group_code,
+      { $push: { student_ids: savedStudent.code } },
+      { new: true }
+    );
     return NextResponse.json({ savedStudent });
   } catch (error) {
     console.error("Error saving student:", error);
@@ -86,7 +76,7 @@ export async function PATCH(req) {
     }
 
     // Update class and group if provided in the request
-    if (studentData.class_code && studentData.group_code) {
+    if (studentData.class_id && studentData.group_id) {
       // Remove students from the old class and group
       await Class.updateMany(
         { student_ids: { $in: studentIds } },
@@ -101,7 +91,7 @@ export async function PATCH(req) {
 
       // Add students to the new class and group
       const updatedClass = await Class.updateMany(
-        { code: studentData.class_code, "groups.code": studentData.group_code },
+        { code: studentData.class_id, "groups.code": studentData.group_id },
         {
           $push: { student_ids: { $each: studentIds } },
           $addToSet: { "groups.$[].student_ids": { $each: studentIds } },

@@ -1,7 +1,7 @@
 import getClasses from "@/app/actions/getClasses";
 import getGroups from "@/app/actions/getGroups";
 import AddStudentForm from "@/app/ui/AddStudentForm/AddStudentForm";
-import AddStudentModal from "@/app/ui/AddStudentModal";
+
 
 export default async function page() {
   const { classes } = await getClasses();
@@ -17,8 +17,8 @@ const classNameMap = classes.reduce((map, obj) => {
   }));
 
   return (
-    <AddStudentModal title={"Add Student"}>
-      <AddStudentForm classOptions={classOptions} groups={groups} />
-    </AddStudentModal>
+    <div>
+        <AddStudentForm classOptions={classOptions} groups={groups} />
+    </div>
   );
 }

@@ -29,7 +29,7 @@ export default function AddStudentModal(props) {
         <ModalContent>
           <>
             <ModalHeader className='flex flex-col gap-1'>
-              Add Student
+              {props.title}
             </ModalHeader>
             <ModalBody>{props.children}</ModalBody>
           </>

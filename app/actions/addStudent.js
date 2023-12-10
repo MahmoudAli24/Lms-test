@@ -1,25 +1,23 @@
+'use server'
 import axios from "axios";
 
-export default async function addStudent(formData) {
+export default async function addStudent(prevState ,formData) {
   try {
     const data = {
       name: formData.get("name"),
       code: +formData.get("code"),
-      class_code: +formData.get("class_code"),
-      group_code: +formData.get("group_code"),
+      class_code: formData.get("class_code"),
+      group_code: formData.get("group_code"),
     };
     const res = await axios.post(
-      "https://lms-test-pi.vercel.app/api/students",
+      "http://localhost:3000/api/students",
       data
     );
-
-    await new Promise((resolve) => {
-      setTimeout(() => {
-        resolve(true);
-      }, 100);
-    });
-    console.log("data =>", data);
-    console.log("res =>", res.status);
+    if (res.status === 200) {
+      return { message : "Student Added"};
+    } else {
+      return { message : "Error Adding Student" };
+    }
   } catch (error) {
     console.log(error);
   }
