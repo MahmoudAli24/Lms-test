@@ -10,7 +10,7 @@ export default async function addStudent(prevState ,formData) {
       group_code: formData.get("group_code"),
     };
     const res = await axios.post(
-      "https://huhu-test.vercel.app/api/students",
+      "http://localhost:3000/api/students",
       data
     );
     if (res.status === 200) {

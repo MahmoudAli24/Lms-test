@@ -37,7 +37,7 @@ function AddClassForm() {
     console.log("classData=>", classData);
     console.log("groups=>", groups);
     try {
-      const res = await axios.post("https://huhu-test.vercel.app/api/classes", classData);
+      const res = await axios.post("http://localhost:3000/api/classes", classData);
       console.log("res=>", res);
       if (res.status === 200) {
         setGroups([{ name: '' }]);

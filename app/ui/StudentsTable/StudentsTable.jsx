@@ -30,7 +30,7 @@ export default function StudentsTable() {
   const [page, setPage] = useState(1);
   const rowsPerPage = 5;
   const { data, isLoading } = useSWR(
-    `https://huhu-test.vercel.app/api/students?page=${page}&rowsPerPage=${rowsPerPage}`,
+    `http://localhost:3000/api/students?page=${page}&rowsPerPage=${rowsPerPage}`,
     fetcher,
     {
       keepPreviousData: true,
