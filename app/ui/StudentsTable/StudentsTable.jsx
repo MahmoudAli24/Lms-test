@@ -30,7 +30,7 @@ export default function StudentsTable() {
   const [page, setPage] = useState(1);
   const rowsPerPage = 5;
   const { data, isLoading } = useSWR(
-    `http://localhost:3000/api/students?page=${page}&rowsPerPage=${rowsPerPage}`,
+    `${process.env.NEXT_PUBLIC_URL}/api/students?page=${page}&rowsPerPage=${rowsPerPage}`,
     fetcher,
     {
       keepPreviousData: true,

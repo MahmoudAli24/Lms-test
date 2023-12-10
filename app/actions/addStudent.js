@@ -10,7 +10,7 @@ export default async function addStudent(prevState ,formData) {
       group_code: formData.get("group_code"),
     };
     const res = await axios.post(
-      "http://localhost:3000/api/students",
+      `${process.env.NEXT_PUBLIC_URL}/api/students`,
       data
     );
     if (res.status === 200) {

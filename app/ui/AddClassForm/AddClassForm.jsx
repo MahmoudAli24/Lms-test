@@ -37,7 +37,7 @@ function AddClassForm() {
     console.log("classData=>", classData);
     console.log("groups=>", groups);
     try {
-      const res = await axios.post("http://localhost:3000/api/classes", classData);
+      const res = await axios.post(`${process.env.NEXT_PUBLIC_URL}/api/classes`, classData);
       console.log("res=>", res);
       if (res.status === 200) {
         setGroups([{ name: '' }]);

@@ -19,7 +19,7 @@ function ClassesTable() {
   const [page, setPage] = useState(1);
   const rowsPerPage = 5;
 
-  const { data, isLoading } = useSWR(`http://localhost:3000/api/classes?page=${page}&rowsPerPage=${rowsPerPage}`, fetcher, {
+  const { data, isLoading } = useSWR(`${process.env.NEXT_PUBLIC_URL}/api/classes?page=${page}&rowsPerPage=${rowsPerPage}`, fetcher, {
     keepPreviousData: true,
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
