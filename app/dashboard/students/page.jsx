@@ -3,7 +3,7 @@ import { Card, CardBody } from "@nextui-org/react";
 
 export default async function page() {
   return (
-    <Card isBlurred={true}>
+    <Card>
       <CardBody>
         <StudentsTable />
       </CardBody>

@@ -1,24 +1,15 @@
-import getClasses from "@/app/actions/getClasses";
-import getGroups from "@/app/actions/getGroups";
+import {getClassesOptions} from "@/app/actions/classesActions";
+import {getGroupsOptions} from "@/app/actions/groupsActions";
 import AddStudentForm from "@/app/ui/AddStudentForm/AddStudentForm";
 import AddStudentModal from "@/app/ui/AddStudentModal";
 
 export default async function page() {
-  const { classes } = await getClasses();
-  const { groups } = await getGroups();
-const classNameMap = classes.reduce((map, obj) => {
-    map[obj.className] = obj._id;
-    return map;
-  }, {});
+    const classesOptions = await getClassesOptions()
+    const groupsOptions = await getGroupsOptions()
 
-  const classOptions = Object.keys(classNameMap).map(className => ({
-    label: className,
-    value: classNameMap[className],
-  }));
-
-  return (
-    <AddStudentModal title={"Add Student"}>
-      <AddStudentForm classOptions={classOptions} groups={groups} />
-    </AddStudentModal>
-  );
+    return (
+        <AddStudentModal title={"Add Student"}>
+            <AddStudentForm classesOptions={classesOptions} groupsOptions={groupsOptions}/>
+        </AddStudentModal>
+    );
 }

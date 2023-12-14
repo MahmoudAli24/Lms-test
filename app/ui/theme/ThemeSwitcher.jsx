@@ -17,7 +17,7 @@ export function ThemeSwitcher() {
 
   useEffect(() => {
     if (mounted) {
-      setTheme(isSelected ? "light" : "dark");
+      setTheme(isSelected ? "dark" : "light");
     }
   }, [isSelected, mounted, setTheme]);
 

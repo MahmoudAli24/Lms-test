@@ -25,19 +25,21 @@ function ClassesTable() {
     revalidateOnReconnect: false,
     revalidateOnMount: true,
   })
-  const classes = () => {
+   
+  const classes = useCallback(() => {
     if (data) {
-      return data.classes
+      return data.classes;
     }
-    return []
-  }
+    return [];
+  }, [data]);
 
-  const count = () => {
+  const count = useCallback(() => {
     if (data) {
       return data.count;
     }
     return 0;
-  };
+
+  }  , [data]);
 
   const classesData = classes()
   const classesCount = count()
