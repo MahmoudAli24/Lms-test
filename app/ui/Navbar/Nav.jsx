@@ -15,7 +15,7 @@ import { Suspense, useState } from "react";
 import ThemeSwitcherSkeleton from "../theme/ThemeSwitcherSkeleton";
 function Nav() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const menuItems = ["Home", "Dashboard", "Students"];
+  const menuItems = ["Home", "Dashboard", "Students", "Classes"];
   return (
     <Navbar
       maxWidth='2xl'
@@ -49,16 +49,20 @@ function Nav() {
                 index === 2
                   ? "primary"
                   : index === menuItems.length - 1
-                  ? "danger"
-                  : "foreground"
+                    ? "danger"
+                    : "foreground"
               }
               className='w-full'
               href={
                 item === "Home"
                   ? "/"
                   : item === "Dashboard"
-                  ? "/dashboard"
-                  : "/dashboard/students"
+                    ? "/dashboard"
+                    : item === "Students"
+                      ? "/dashboard/students"
+                      : item === "Classes"
+                        ? "/dashboard/classes"
+                        : "/"
               }
               size='md'
             >
