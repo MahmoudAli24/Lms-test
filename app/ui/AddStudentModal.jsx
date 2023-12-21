@@ -22,6 +22,7 @@ export default function AddStudentModal(props) {
         onClose={handleClose}
         size='5xl'
         placement='center'
+        backdrop='blur'
         onOpenChange={(open) => {
           open === false && handleAnimationComplete();
         }}

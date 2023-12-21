@@ -6,17 +6,33 @@ import Class from "@/app/models/Class";
 import Group from "@/app/models/Group";
 
 export async function GET(req) {
-    const page = +req.nextUrl.searchParams.get("page");
-    const rowsPerPage = +req.nextUrl.searchParams.get("rowsPerPage");
-    await dbConnect();
-    const count = await Student.countDocuments();
-    const students = await Student.find()
-        .skip((page - 1) * rowsPerPage)
-        .limit(rowsPerPage);
-    if (students.length > 0) {
-        return NextResponse.json({students, count});
-    } else {
-        return NextResponse.json({message: "No students found"});
+    try {
+        await dbConnect();
+
+        const page = +req.nextUrl.searchParams.get("page") || 1;
+        const rowsPerPage = +req.nextUrl.searchParams.get("rowsPerPage") || 5;
+        const searchName = req.nextUrl.searchParams.get("name");
+
+        let query = {};
+
+        if (searchName) {
+            // If a name is provided, add a search condition to the query
+            query = { name: { $regex: new RegExp(searchName, 'i') } };
+        }
+
+        const count = await Student.countDocuments(query);
+        const students = await Student.find(query)
+            .skip((page - 1) * rowsPerPage)
+            .limit(rowsPerPage);
+
+        if (students.length > 0) {
+            return NextResponse.json({students, count});
+        } else {
+            return NextResponse.json({message: "No students found"});
+        }
+    } catch (error) {
+        console.error("Error fetching students:", error);
+        return NextResponse.json({message: "Internal Server Error"});
     }
 }
 

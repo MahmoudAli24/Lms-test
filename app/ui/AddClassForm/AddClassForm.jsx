@@ -1,17 +1,21 @@
 "use client"
-import {useState} from "react";
+import {useEffect, useRef, useState} from "react";
+import {useFormState, useFormStatus} from "react-dom";
 import {Button, Input} from "@nextui-org/react";
-import axios from "axios";
+import {addClass} from "@/app/actions/classesActions";
+import {displayToast} from "@/app/ui/displayToast ";
+
+function SubmitButton() {
+    const {pending} = useFormStatus()
+    return (<Button type='submit' color='primary' isLoading={pending}>
+        Add Class
+    </Button>)
+}
 
 function AddClassForm() {
+    const formRef = useRef()
+    const [state, formAction] = useFormState(addClass, null)
     const [groups, setGroups] = useState([{groupName: ""}]);
-    const [className, setClassName] = useState('');
-
-    const handleInputChange = (index, event) => {
-        const newGroups = [...groups];
-        newGroups[index].groupName = event.target.value;
-        setGroups(newGroups);
-    };
 
     const handleAddGroup = () => {
         setGroups([...groups, {groupName: ""}]);
@@ -23,38 +27,22 @@ function AddClassForm() {
         setGroups(newGroups);
     };
 
-    const handleSubmit = async (event) => {
-        event.preventDefault();
-        // Your form submission logic here using the 'groups' state
-        // get form data  and send to server
-        const formData = new FormData(event.target);
-        const data = Object.fromEntries(formData);
-        const {className} = data;
-        const classData = {
-            className,
-            groups,
-        };
-        try {
-            const res = await axios.post(`${process.env.NEXT_PUBLIC_URL}/api/classes`, classData);
-            console.log("res=>", res);
-            if (res.status === 200) {
-                setGroups([{name: ''}]);
-                setClassName('');
-            }
-        } catch (error) {
-            console.log("error=>", error);
+    useEffect(() => {
+        if (state && state.type === 'success') {
+            displayToast(state)
+            formRef.current.reset()
+        } else if (state && state.type === 'error') {
+            displayToast(state)
         }
-    };
+    }, [state])
 
     return (
-        <form onSubmit={handleSubmit}>
+        <form action={formAction} ref={formRef}>
             <Input
                 name="className"
                 type="text"
                 label="Class Name"
                 placeholder="Enter Class Name"
-                value={className}
-                onChange={(event) => setClassName(event.target.value)}
                 required
             />
             {groups.map((group, index) => (
@@ -68,8 +56,7 @@ function AddClassForm() {
                         type='text'
                         label={`Group ${index + 1}`}
                         placeholder={`Enter Group ${index + 1} Name`}
-                        value={group.name}
-                        onChange={(e) => handleInputChange(index, e)}
+
                     />
                     {index > 0 && (
                         <Button
@@ -86,9 +73,7 @@ function AddClassForm() {
             <Button type='button' color='secondary' auto onClick={handleAddGroup}>
                 Add Group
             </Button>
-            <Button type='submit' color='primary' auto>
-                Add Class
-            </Button>
+            <SubmitButton />
         </form>
     );
 }
