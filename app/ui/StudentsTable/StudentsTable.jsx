@@ -32,7 +32,7 @@ import {SearchIcon} from "@/app/ui/Icons/SearchIcon";
 const fetcher = (...args) => fetch(...args).then((res) => res.json());
 
 export default function StudentsTable() {
-    const columns = [{name: "ID", uid: "id"}, {name: "NAME", uid: "name"}, {name: "ACTIONS", uid: "actions"},];
+    const columns = [{name: "ID", uid: "id"}, {name: "NAME", uid: "name"} ,{name :"CLASS" , uid:"className"},{name :"GROUP" , uid:"groupName"}, {name: "ACTIONS", uid: "actions"},];
     const rowsPerPage = 5;
     const {isOpen, onOpen, onOpenChange} = useDisclosure();
     const [page, setPage] = useState(1);
@@ -40,17 +40,21 @@ export default function StudentsTable() {
     const [isLoaded, setIsLoaded] = useState(false);
     const [filterValue, setFilterValue] = useState("");
 
-    const handleDeleteClick = (student) => {
+    const handleDeleteClick = useCallback((student) => {
         setSelectedStudent(student);
         onOpen();
-    };
+    }, [setSelectedStudent, onOpen]);
+
+    const fields = useMemo(() => {
+        return "name,groupName,className,code";
+    }, []);
     const handleDeleteConfirm = async () => {
         try {
             const req = await deleteStudent(selectedStudent.code);
             if (req.type === 'success') {
                 displayToast(req)
                 onOpenChange();
-                await mutate(`${process.env.NEXT_PUBLIC_URL}/api/students?page=${page}&rowsPerPage=${rowsPerPage}}${filterValue ? `&name=${filterValue}` : ""}`);
+                await mutate(`${process.env.NEXT_PUBLIC_URL}/api/students?page=${page}&rowsPerPage=${rowsPerPage}}${filterValue ? `&name=${filterValue}` : ""}&fields=${fields}`);
                 setIsLoaded(true)
 
             } else {
@@ -62,7 +66,7 @@ export default function StudentsTable() {
     };
     const {
         data, isLoading
-    } = useSWR(`${process.env.NEXT_PUBLIC_URL}/api/students?page=${page}&rowsPerPage=${rowsPerPage}${filterValue ? `&name=${filterValue}` : ""}`, fetcher, {
+    } = useSWR(`${process.env.NEXT_PUBLIC_URL}/api/students?page=${page}&rowsPerPage=${rowsPerPage}${filterValue ? `&name=${filterValue}` : ""}&fields=${fields}`, fetcher, {
         keepPreviousData: true, revalidateOnFocus: false, revalidateOnReconnect: false, revalidateOnMount: true,
     });
     const students = () => {
@@ -85,6 +89,8 @@ export default function StudentsTable() {
     const pages = useMemo(() => {
         return studentsCount ? Math.ceil(studentsCount / rowsPerPage) : 1;
     }, [studentsCount, rowsPerPage]);
+
+    console.log("pages", pages);
 
     const renderCell = useCallback((item, columnKey) => {
         const cellValue = studentsData[columnKey];
@@ -116,12 +122,18 @@ export default function StudentsTable() {
             return <span>{item.name}</span>;
         } else if (columnKey === "id") {
             return <span>{item.code}</span>;
-        } else {
+        } else if (columnKey === "groupName") {
+            return <span>{item.groupName}</span>;
+        }
+        else if (columnKey === "className") {
+            return <span>{item.className}</span>;
+        }
+        else {
             return cellValue;
         }
-    }, [studentsData]);
+    }, [studentsData , handleDeleteClick]);
 
-    const loadingState = isLoading || data.length === 0 || data === undefined ? "loading" : "idle";
+    const loadingState = isLoading || data.length === 0 || false ? "loading" : "idle";
 
     const onSearchChange = useCallback((value) => {
         if (value) {

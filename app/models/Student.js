@@ -8,8 +8,9 @@ const studentSchema = new Schema({
     class_code: {type: Schema.Types.ObjectId, ref: "Class", required: true},
     group_code: {type: Schema.Types.ObjectId, ref: "Group", required: true},
     attendance: [{date: Date, status: String}],
-    examGrades: [{exam_id: {type: Schema.Types.ObjectId, ref: "Exam"}, grade: Number},],
-    homework: [{subject: String, content: String, due_date: Date}],
+    examGrades: [{exam_id: {type: Schema.Types.ObjectId, ref: "Exam"}},],
+    homework: [{homework_id: {type: Schema.Types.ObjectId, ref: "Homework"}}],
+    vocabulary: [{vocabulary_id: {type: Schema.Types.ObjectId, ref: "Vocabulary"}}],
     createdAt: {type: Date, default: Date.now},
 });
 

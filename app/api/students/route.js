@@ -12,6 +12,7 @@ export async function GET(req) {
         const page = +req.nextUrl.searchParams.get("page") || 1;
         const rowsPerPage = +req.nextUrl.searchParams.get("rowsPerPage") || 5;
         const searchName = req.nextUrl.searchParams.get("name");
+        const selectedFields = req.nextUrl.searchParams.get("fields"); // Fields to be selected by the client
 
         let query = {};
 
@@ -20,21 +21,58 @@ export async function GET(req) {
             query = { name: { $regex: new RegExp(searchName, 'i') } };
         }
 
+        const projection = buildProjection(selectedFields); // Helper function to build the projection
+
         const count = await Student.countDocuments(query);
         const students = await Student.find(query)
+            .populate('group_code', 'groupName -_id') // Populate groupName for the Group and exclude _id
+            .populate('class_code', 'className -_id') // Populate groupName for the Group and exclude _id
+            .select(projection) // Apply the projection to select fields
             .skip((page - 1) * rowsPerPage)
             .limit(rowsPerPage);
 
+        const simplifiedStudents = students.map(student => {
+            return {
+                code: student.code,
+                name: student.name,
+                className: student.class_code ? student.class_code.className : "Not Have Group",
+                groupName: student.group_code ? student.group_code.groupName : "Not Have Group",
+                attendance: student.attendance,
+                examGrades: student.examGrades,
+                homework: student.homework,
+                createdAt: student.createdAt,
+            }
+        });
         if (students.length > 0) {
-            return NextResponse.json({students, count});
+            return NextResponse.json({ students:simplifiedStudents, count });
         } else {
-            return NextResponse.json({message: "No students found"});
+            return NextResponse.json({ message: "No students found" });
         }
     } catch (error) {
         console.error("Error fetching students:", error);
-        return NextResponse.json({message: "Internal Server Error"});
+        return NextResponse.json({ message: "Internal Server Error" });
     }
 }
+
+// Helper function to build the projection based on selected fields
+function buildProjection(selectedFields) {
+    if (!selectedFields) {
+        // If no specific fields are requested, return all fields except _id
+        return { _id: 0 };
+    }
+
+    // Split the selected fields and create a projection object
+    const fieldsArray = selectedFields.split(',');
+    const projection = {};
+
+    fieldsArray.forEach(field => {
+        projection[field] = 1;
+    });
+
+    return projection;
+}
+
+
 
 export async function POST(req) {
     const path = req.nextUrl.searchParams.get('path')

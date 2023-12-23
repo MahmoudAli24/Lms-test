@@ -10,3 +10,8 @@ export default async function page() {
     </Card>
   );
 }
+
+export const metadata = {
+    title: 'Students',
+    description: 'Students Page for the Dashboard App',
+}

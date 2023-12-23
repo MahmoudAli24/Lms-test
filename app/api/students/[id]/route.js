@@ -5,22 +5,57 @@ import dbConnect from "../../../libs/dbConnect";
 import {NextResponse} from "next/server";
 
 export async function GET(req, {params}) {
-    const code = parseInt(params.id);
-    await dbConnect();
-
     try {
+        await dbConnect();
+        const code = parseInt(params.id);
+        const selectedFields = req.nextUrl.searchParams.get("fields");
+
+        const projection = buildProjection(selectedFields);
+
         const student = await Student.findOne({code})
+            .populate('group_code', 'groupName -_id')
+            .populate('class_code', 'className -_id')
+            .select(projection);
 
         if (!student) {
             return NextResponse.json({message: "Student not found"});
         }
 
+        const simplifiedStudent = mapStudentToSimplifiedFormat(student);
 
-        return NextResponse.json({student});
+        return NextResponse.json({student: simplifiedStudent});
     } catch (error) {
         console.error(error);
         return NextResponse.json({message: "Error fetching student"});
     }
+}
+
+function buildProjection(selectedFields) {
+    if (!selectedFields) {
+        return {_id: 0};
+    }
+
+    const fieldsArray = selectedFields.split(',');
+    const projection = {};
+
+    fieldsArray.forEach(field => {
+        projection[field] = 1;
+    });
+
+    return projection;
+}
+
+function mapStudentToSimplifiedFormat(student) {
+    return {
+        code: student.code,
+        name: student.name,
+        className: student.class_code ? student.class_code.className : "Not Have Group",
+        groupName: student.group_code ? student.group_code.groupName : "Not Have Group",
+        attendance: student.attendance,
+        examGrades: student.examGrades,
+        homework: student.homework,
+        createdAt: student.createdAt,
+    };
 }
 
 
@@ -72,7 +107,7 @@ export async function PATCH(req, {params}) {
         // if neither the class nor the group has changed, update the student
         await Student.findOneAndUpdate(
             {code: studentCode},
-            { ...studentData , code: studentCode},
+            {...studentData, code: studentCode},
             {new: true}
         );
 
