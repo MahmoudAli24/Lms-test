@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-const {Schema} = mongoose;
+const { Schema } = mongoose;
 
 const attendanceSchema = new Schema({
     student: {
@@ -10,7 +10,7 @@ const attendanceSchema = new Schema({
     }, date: {
         type: Date, default: Date.now, index: true,
     }, status: {
-        type: String, enum: ['present', 'absent' ,"late"], required: true,
+        type: String, enum: ['present', 'absent', "late"], required: true,
     },
 });
 
