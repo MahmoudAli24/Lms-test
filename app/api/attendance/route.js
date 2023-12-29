@@ -2,7 +2,7 @@
 import dbConnect from "@/app/libs/dbConnect";
 import Attendance from "@/app/models/Attendance";
 import Vocabulary from "@/app/models/Vocabulary";
-import Homework from "@/app/models/Homework";
+import Homework from "../../models/Homework";
 import Student from "@/app/models/Student";
 
 async function checkAndCreateRecord(Model, student, group_id, date, grade, statusKey) {
