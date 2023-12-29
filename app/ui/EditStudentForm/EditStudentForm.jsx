@@ -18,8 +18,8 @@ export default function EditStudentForm({classesOptions, groupsOptions, studentI
     const router = useRouter()
     const [state, formAction] = useFormState(editStudent, null)
     const studentCode = studentInfo.code
-    const [selectedClass, setSelectedClass] = useState(`${studentInfo.class_code}`);
-    const [selectedGroup, setSelectedGroup] = useState(`${studentInfo.group_code}`);
+    const [selectedClass, setSelectedClass] = useState(`${studentInfo.class_id}`);
+    const [selectedGroup, setSelectedGroup] = useState(`${studentInfo.group_id}`);
     const [name, setName] = useState(`${studentInfo.name}`);
     const [code, setCode] = useState(studentCode);
     const [groups, setGroups] = useState([]);
@@ -37,7 +37,7 @@ export default function EditStudentForm({classesOptions, groupsOptions, studentI
         } else if (state && state.type === 'error') {
             displayToast(state)
         }
-    }, [state])
+    }, [router, state])
 
     return (
         <form action={formAction}>

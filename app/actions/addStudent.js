@@ -7,17 +7,18 @@ export default async function addStudent(prevState, formData) {
     const schema = z.object({
         name: z.string(),
         code: z.number(),
-        class_code: z.string(),
-        group_code: z.string(),
+        phone: z.string(),
+        class_id: z.string(),
+        group_id: z.string(),
     });
     const parse = schema.safeParse({
         name: formData.get('name'),
         code: +formData.get('code'),
-        class_code: formData.get('class_id'),
-        group_code: formData.get('group_id'),
+        phone: formData.get('phone'),
+        class_id: formData.get('class_id'),
+        group_id: formData.get('group_id'),
     })
     const data = parse.data
-
     try {
         const res = await axios.post(`${process.env.NEXT_PUBLIC_URL}/api/students`, data)
         if (res.status === 200) {

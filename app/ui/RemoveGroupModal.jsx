@@ -1,4 +1,4 @@
-import {useState} from 'react';
+
 import {Modal, Button, ModalContent, ModalBody, ModalFooter, ModalHeader} from '@nextui-org/react';
 
 const RemoveGroupModal = ({isOpen, onOpenChange ,handleDeleteConfirm}) => {

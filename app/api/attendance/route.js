@@ -1,57 +1,67 @@
 // add Attendance route to app/api/attendance/route.js
 import dbConnect from "@/app/libs/dbConnect";
 import Attendance from "@/app/models/Attendance";
+import Vocabulary from "@/app/models/Vocabulary";
+import Homework from "@/app/models/Homework";
 import Student from "@/app/models/Student";
+
+async function checkAndCreateRecord(Model, student, group_id, date, grade, statusKey) {
+    // Check if record already exists for the student on the given date
+    const existingRecord = await Model.findOne({
+        student: student._id,
+        group: group_id,
+        date,
+    });
+
+    if (existingRecord) {
+        // Handle case where record already exists
+        console.log(`Record already exists for student ${student.code} on ${date}`);
+        return;
+    }
+
+    // Create new record
+    const newRecord = new Model({
+        student: student._id,
+        group: group_id,
+        date,
+        [statusKey]: grade,
+    });
+
+    // Save record
+    await newRecord.save();
+
+    // Check if the record's _id is not in the student's array
+    if (!student[Model.modelName.toLowerCase()].includes(newRecord._id)) {
+        // Save _id of the record to the student data
+        student[Model.modelName.toLowerCase()].push(newRecord._id);
+        await student.save();
+    }
+}
 
 export async function POST(req) {
     try {
+        const { group_id, date, attendanceData } = await req.json();
+
         await dbConnect();
-        const { group_id, date, grades } = await req.json();
 
-        // Iterate through each student's grade
-        for (const grade of grades) {
-            // Check if the student already has attendance for the same date
-            const existingAttendanceForStudent = await Student.findOne({
-                _id: grade.student_id,
-                'attendance.date': date,
-            });
+        for (const { attendance, voc, homework, code } of attendanceData) {
+            const student = await Student.findOne({ code });
 
-            // If no existing attendance for the same date, add attendance
-            if (!existingAttendanceForStudent) {
-                // Update student attendance
-                await Student.updateOne(
-                    { _id: grade.student_id },
-                    {
-                        $push: {
-                            attendance: {
-                                date,
-                                status: grade.grade,
-                            },
-                        },
-                    }
-                );
-            }
+            await checkAndCreateRecord(Attendance, student, group_id, date, attendance, 'status');
+            await checkAndCreateRecord(Vocabulary, student, group_id, date, voc, 'status');
+            await checkAndCreateRecord(Homework, student, group_id, date, homework, 'status');
         }
 
-        // Check if there is already an attendance record for the group on the same day
-        const existingAttendance = await Attendance.findOne({ group_id, date });
-
-        // If no existing attendance record, create a new one
-        if (!existingAttendance) {
-            const attendance = new Attendance({ group_id, date, grades });
-            await attendance.save();
-        }
-
-        return Response.json({ message: 'Attendance added successfully' });
+        return Response.json({ message: "Attendance created successfully" });
     } catch (error) {
-        console.error('Error adding attendance:', error);
-        return Response.json({ message: 'Internal Server Error' });
+        console.error("Error creating attendance:", error);
+        return { status: 500, body: { message: "Internal Server Error" } };
     }
 }
 
 // get attendance
 
-export async function GET(req) {
+export async function GET() {
     try {
         await dbConnect();
         const attendance = await Attendance.find()

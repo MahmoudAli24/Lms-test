@@ -6,17 +6,16 @@ export async function editStudent(prevState , formData) {
     const schema = z.object({
         name: z.string(),
         code: z.number(),
-        class_code: z.string(),
-        group_code: z.string(),
+        class_id: z.string(),
+        group_id: z.string(),
     });
     const parse = schema.safeParse({
         name: formData.get('name'),
         code: +formData.get('code'),
-        class_code: formData.get('class_id'),
-        group_code: formData.get('group_id'),
+        class_id: formData.get('class_id'),
+        group_id: formData.get('group_id'),
     })
     const data = parse.data
-    console.log("data" , data)
     try {
         const res = await axios.patch(`${process.env.NEXT_PUBLIC_URL}/api/students/${data.code}`, data)
         if (res.status === 200) {
@@ -43,5 +42,16 @@ export async function deleteStudent(code) {
     } catch (e) {
         console.log(e)
         return {message: "Something went wrong", type: 'error'}
+    }
+}
+
+// Get Students
+export async function getStudents(fields ,group_id) {
+
+    try {
+        const res = await axios.get(`${process.env.NEXT_PUBLIC_URL}/api/students?${fields ? `fields=${fields}` : ''}${group_id ? `&group_id=${group_id}` : ''}`)
+        return res.data
+    } catch (e) {
+        console.log(e)
     }
 }

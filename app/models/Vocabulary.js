@@ -1,14 +1,17 @@
 const mongoose = require('mongoose');
 
-const { Schema } = mongoose;
+const {Schema} = mongoose;
 
 const vocabularySchema = new Schema({
-  class_id: { type: Schema.Types.ObjectId, ref: 'Class', required: true },
-  date: { type: Date, required: true },
-  grades: [{
-    student_id: { type: Schema.Types.ObjectId, ref: 'Student' },
-    grade: { type: String, required: true, }
-  }],
+    student: {
+        type: mongoose.Schema.Types.ObjectId, ref: 'Student', index: true,
+    }, group: {
+        type: mongoose.Schema.Types.ObjectId, ref: 'Group', index: true,
+    }, date: {
+        type: Date, default: Date.now, index: true,
+    }, status: {
+        type: String, enum: ["good" ,"very good" , "weak" ,"excellent"], required: true,
+    },
 });
 
-module.exports = mongoose.models.Vocabulary || mongoose.model('Vocabulary', vocabularySchema);
+export default mongoose.models.Vocabulary || mongoose.model('Vocabulary', vocabularySchema);

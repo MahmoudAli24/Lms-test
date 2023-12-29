@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import SidebarItem from "./SidebarItem";
 
 export default function SideBar() {
-  const menuItems = ["Dashboard", "Students", "Classes"];
+  const menuItems = ["Dashboard", "Students", "Classes" , "Attendance"];
   return (
     <motion.div
       className='w-[250px] h-[calc(100vh-64px)] p-3 bg-[#F5F7F9] dark:bg-[#18181b] tablet:block hidden'
@@ -25,7 +25,9 @@ export default function SideBar() {
                 ? "/dashboard/students"
                 : item === "Classes"
                 ? "/dashboard/classes"
-                : null
+                : item === "Attendance"
+                ? "/dashboard/attendance"
+                 :null
             }
           >
             {item}

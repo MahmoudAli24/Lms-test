@@ -1,5 +1,5 @@
-import {Spinner, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow} from "@nextui-org/react";
 import {useCallback} from "react";
+import TableData from "@/app/ui/TableData/TableData";
 
 export default function Attendance({attendance}) {
     console.log("attendance", attendance)
@@ -10,30 +10,12 @@ export default function Attendance({attendance}) {
             case "date":
                 return new Date(item.date).toLocaleDateString("en");
             case "status":
-                return item.status;
+                return item.status === "present" ? "Present" : item.status === "absent" ? "Absent" : "Late";
             default:
                 return null;
         }
     }, []);
     return (
-        <Table>
-            <TableHeader columns={columns}>
-                {(column) => (<TableColumn
-                    key={column.uid}
-                >
-                    {column.name}
-                </TableColumn>)}
-            </TableHeader>
-            <TableBody
-                items={attendance ? attendance : []}
-                loadingContent={<Spinner/>}
-                emptyContent={"No rows to display."}
-            >
-                {(item) => (<TableRow key={item._id}>
-                    {(columnKey) => (<TableCell>{renderCell(item, columnKey)}</TableCell>)}
-                </TableRow>)}
-            </TableBody>
-
-        </Table>
+        <TableData columns={columns} data={attendance} renderCell={renderCell} tableAriaLabel={"Attendance Table"}/>
     )
 }

@@ -1,6 +1,5 @@
 "use server"
 import axios from "axios";
-import z from "zod";
 export async function getGroupsOptions() {
     try {
         const res = await axios.get(`${process.env.NEXT_PUBLIC_URL}/api/groups`);

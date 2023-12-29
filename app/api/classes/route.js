@@ -19,6 +19,8 @@ export async function GET(req) {
 
         const count = await ClassModel.countDocuments(query);
         const classes = await ClassModel.find(query)
+            .select("-student_ids")
+            .populate("groups", "-student_ids -class_id -__v")
             .skip((page - 1) * rowsPerPage)
             .limit(rowsPerPage);
         if (classes.length > 0) {
@@ -38,23 +40,19 @@ export async function POST(req) {
     try {
         await dbConnect()
         const classInstance = new ClassModel({
-            className,
-            groups: [], // Initialize with an empty array
+            className, groups: [], // Initialize with an empty array
         });
 
         // Save the class instance to get its _id
         const savedClass = await classInstance.save();
 
         // Create and save each group
-        const savedGroups = await Promise.all(
-            groups.map(async (groupData) => {
-                const groupInstance = new GroupModel({
-                    ...groupData,
-                    class_id: savedClass._id,
-                });
-                return groupInstance.save();
-            })
-        );
+        const savedGroups = await Promise.all(groups.map(async (groupData) => {
+            const groupInstance = new GroupModel({
+                ...groupData, class_id: savedClass._id,
+            });
+            return groupInstance.save();
+        }));
 
         // Update the class instance with the saved groups
         savedClass.groups = savedGroups;

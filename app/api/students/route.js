@@ -9,12 +9,17 @@ export async function GET(req) {
     try {
         await dbConnect();
 
-        const page = +req.nextUrl.searchParams.get("page") || 1;
-        const rowsPerPage = +req.nextUrl.searchParams.get("rowsPerPage") || 5;
+        const page = +req.nextUrl.searchParams.get("page") ;
+        const rowsPerPage = +req.nextUrl.searchParams.get("rowsPerPage") ;
         const searchName = req.nextUrl.searchParams.get("name");
         const selectedFields = req.nextUrl.searchParams.get("fields"); // Fields to be selected by the client
-
+        const groupId = req.nextUrl.searchParams.get("group_id");
         let query = {};
+
+        if (groupId) {
+            query.group_id = groupId;
+        }
+
 
         if (searchName) {
             // If a name is provided, add a search condition to the query
@@ -25,8 +30,8 @@ export async function GET(req) {
 
         const count = await Student.countDocuments(query);
         const students = await Student.find(query)
-            .populate('group_code', 'groupName -_id') // Populate groupName for the Group and exclude _id
-            .populate('class_code', 'className -_id') // Populate groupName for the Group and exclude _id
+            .populate('group_id', 'groupName -_id') // Populate groupName for the Group and exclude _id
+            .populate('class_id', 'className -_id') // Populate groupName for the Group and exclude _id
             .select(projection) // Apply the projection to select fields
             .skip((page - 1) * rowsPerPage)
             .limit(rowsPerPage);
@@ -35,8 +40,8 @@ export async function GET(req) {
             return {
                 code: student.code,
                 name: student.name,
-                className: student.class_code ? student.class_code.className : "Not Have Group",
-                groupName: student.group_code ? student.group_code.groupName : "Not Have Group",
+                className: student.class_id ? student.class_id.className : "Not Have Group",
+                groupName: student.group_id ? student.group_id.groupName : "Not Have Group",
                 attendance: student.attendance,
                 examGrades: student.examGrades,
                 homework: student.homework,
@@ -72,11 +77,10 @@ function buildProjection(selectedFields) {
     return projection;
 }
 
-
-
 export async function POST(req) {
     const path = req.nextUrl.searchParams.get('path')
     const studentData = await req.json();
+    console.log("studentData", studentData)
     await dbConnect();
 
     try {
@@ -84,17 +88,19 @@ export async function POST(req) {
         const newStudent = new Student({
             code: studentData.code,
             name: studentData.name,
-            class_code: studentData.class_code,
-            group_code: studentData.group_code,
+            class_id: studentData.class_id,
+            group_id: studentData.group_id,
+            phone: studentData.phone,
             attendance: [],
             examGrades: [],
             homework: [],
+            vocabulary: [],
         });
-        const classDocument = await Class.findById(studentData.class_code);
+        const classDocument = await Class.findById(studentData.class_id);
         if (!classDocument) {
             return NextResponse.json({error: "Class not found"}, {status: 404});
         }
-        const groupDocument = await Group.findById(studentData.group_code);
+        const groupDocument = await Group.findById(studentData.group_id);
         if (!groupDocument) {
             return NextResponse.json({error: "Group not found"}, {status: 404});
         }
@@ -112,13 +118,13 @@ export async function POST(req) {
         const savedStudent = await newStudent.save();
         // Add the student to the class and group
         await Class.findByIdAndUpdate(
-            studentData.class_code,
-            {$push: {student_ids: savedStudent.code}},
+            studentData.class_id,
+            {$push: {student_ids: savedStudent._id}},
             {new: true}
         );
         await Group.findByIdAndUpdate(
-            studentData.group_code,
-            {$push: {student_ids: savedStudent.code}},
+            studentData.group_id,
+            {$push: {student_ids: savedStudent._id}},
             {new: true}
         );
         if (path) {

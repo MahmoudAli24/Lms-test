@@ -39,9 +39,17 @@ export default function AddStudentForm({classesOptions, groupsOptions}) {
             />
             <Input
                 name='code'
-                type='number'
+                type='text'
                 label='Code'
                 placeholder='Enter Student Code'
+                className='appearance-none w-[calc(25%-0.15rem)]'
+                isRequired
+            />
+            <Input
+                name='phone'
+                type='number'
+                label='Phone'
+                placeholder='Enter Student Phone'
                 className='appearance-none w-[calc(25%-0.15rem)]'
                 isRequired
             />

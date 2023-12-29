@@ -8,8 +8,8 @@ export default async function editStudentPage({params}) {
     const code = +params.code
     const classesOptions = await getClassesOptions()
     const groupsOptions = await getGroupsOptions()
-    const {student} = await getStudent(code)
-
+    const fields = "name,code,group_id,class_id,_id"
+    const {student} = await getStudent(code ,fields)
     return (
         <Card>
             <CardBody>

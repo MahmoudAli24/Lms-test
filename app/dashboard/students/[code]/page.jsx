@@ -6,7 +6,7 @@ export default async function page({params}) {
     const code = +params.code
     const fields = 'name,code,className,groupName,attendance,exams,vocabulary,homework,examGrades'
     const {student} = await getStudent(code , fields)
-    console.log("student", student.attendance)
+    console.log("student", student)
 
     return(
         <div>

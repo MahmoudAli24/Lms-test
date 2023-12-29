@@ -81,10 +81,7 @@ export async function getClass(id) {
 
 // Edit class
 export async function editClass(prevState, data) {
-
     const id = data._id
-
-    console.log("data", data)
 
     const schema = z.object({
         _id: z.string(),
@@ -96,17 +93,20 @@ export async function editClass(prevState, data) {
         }))
     })
 
-    const parse = schema.safeParse(data)
+    const parse = schema.safeParse({
+        _id: id,
+        className: data.className,
+        groups: data.groups
+
+    })
 
     const dataParsed = parse.data
-
-    console.log("dataParsed", dataParsed)
 
     if (!parse.success) {
         return {message: "Something went wrong", type: 'error'}
     } else {
         try {
-            const res = await axios.patch(`${process.env.NEXT_PUBLIC_URL}/api/classes/${id}`, {dataParsed});
+            const res = await axios.patch(`${process.env.NEXT_PUBLIC_URL}/api/classes/${id}`, dataParsed);
             if (res.status === 200) {
                 return {message: "Successfully updated", type: 'success'}
             } else if (res.status === 404) {
