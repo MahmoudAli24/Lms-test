@@ -2,7 +2,7 @@
 import dbConnect from "@/app/libs/dbConnect";
 import Attendance from "@/app/models/Attendance";
 import Vocabulary from "@/app/models/Vocabulary";
-import Homework from "@/app/models/Homework";
+import Homework from "@/app/models/Homework"
 import Student from "@/app/models/Student";
 
 async function checkAndCreateRecord(Model, student, group_id, date, grade, statusKey) {
@@ -67,12 +67,12 @@ export async function GET() {
         const attendance = await Attendance.find()
 
         if (attendance.length > 0) {
-            return Response.json({attendance})
+            return Response.json({ attendance })
         } else {
-            return Response.json({message: "No attendance found"})
+            return Response.json({ message: "No attendance found" })
         }
     } catch (error) {
         console.error("Error fetching attendance:", error);
-        return Response.json({message: "Internal Server Error"});
+        return Response.json({ message: "Internal Server Error" });
     }
 }
