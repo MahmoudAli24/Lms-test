@@ -3,11 +3,13 @@ import { Card, CardBody } from "@nextui-org/react";
 
 export default async function page() {
   return (
-    <Card>
-      <CardBody>
-        <StudentsTable />
-      </CardBody>
-    </Card>
+    <>
+        <Card>
+            <CardBody>
+                <StudentsTable />
+            </CardBody>
+        </Card>
+    </>
   );
 }
 

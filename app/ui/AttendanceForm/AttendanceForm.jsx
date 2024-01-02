@@ -1,64 +1,105 @@
 "use client"
-import { Select, SelectItem } from "@nextui-org/select";
-import { useEffect, useState } from "react";
-import { getStudents } from "@/app/actions/studentsActions";
-import { Button, Checkbox, Input, Spinner, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@nextui-org/react";
-import { addAttendance } from "@/app/actions/attendanceActions";
+import {Select, SelectItem} from "@nextui-org/react";
+import {useEffect, useState} from "react";
+import {getStudents} from "@/app/actions/studentsActions";
+import {
+    Button, Checkbox, Input, Spinner, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow
+} from "@nextui-org/react";
+import {addAttendance} from "@/app/actions/attendanceActions";
 import {displayToast} from "@/app/ui/displayToast ";
+import {revalidatePath} from "next/cache";
 
-export default function AttendanceForm({ classesOptions, groupsOptions }) {
+export default function AttendanceForm({classesOptions, groupsOptions}) {
     const [selectedClass, setSelectedClass] = useState(undefined);
     const [selectedGroup, setSelectedGroup] = useState(undefined);
     const [selectedDate, setSelectedDate] = useState(undefined);
     const [studentsData, setStudentsData] = useState([]);
     const [loadingState, setLoadingState] = useState(false);
     const [attendanceData, setAttendanceData] = useState([]);
+    const [vocData, setVocData] = useState({});
+    const [homeworkData, setHomeworkData] = useState({});
+
 
     const groups = groupsOptions && groupsOptions.filter((item) => item.class_id === selectedClass);
 
-    const AttendanceOptions = [
-        { label: "Present", value: "present" },
-        { label: "Absent", value: "absent" },
-        { label: "Late", value: "late" },
-    ];
+    const AttendanceOptions = [{label: "Present", value: "present"}, {label: "Absent", value: "absent"}, {
+        label: "Late",
+        value: "late"
+    },];
 
-    const VocOptions = [
-        { label: "weak", value: "weak" },
-        { label: "good", value: "good" },
-        { label: "very good", value: "very good" },
-        { label: "excellent", value: "excellent"}
-    ]
+    const VocOptions = [{label: "Weak", value: "weak"}, {label: "Good", value: "good"}, {
+        label: "Very Good",
+        value: "very good"
+    }, {label: "Excellent", value: "excellent"}, {label: "Absent", value: "absent"},];
+
+    const fields = "code,name,groupName,className,attendance,homework,vocabulary";
+
+    const fetchStudentsData = async () => {
+        setLoadingState(true);
+        try {
+            const { students } = await getStudents(fields, selectedGroup);
+
+            // Filter out students who already have attendance for the selected date
+            const filteredStudents = students.filter((student) => {
+                const hasAttendanceForSelectedDate = student.attendance.some((entry) =>
+                    isSameDay(new Date(entry.date), new Date(selectedDate))
+                );
+                return !hasAttendanceForSelectedDate;
+            });
+
+            const initialAttendanceData = filteredStudents.map((student) => ({
+                code: student.code,
+                attendance: 'present',
+                homework: false,
+                voc: 'excellent',
+            }));
+            setAttendanceData(initialAttendanceData);
+            setStudentsData(filteredStudents);
+        } catch (error) {
+            console.error('Error fetching students:', error);
+            // Handle error as needed
+        } finally {
+            setLoadingState(false);
+        }
+    };
 
     useEffect(() => {
-        if (selectedClass && selectedGroup) {
-            // Set loadingState to true before making the API call
-            setLoadingState(true);
-
-            // get students from Action
-            (async () => {
-                try {
-                    const {students} = await getStudents(null, selectedGroup);
-                    // Initialize attendance data with default values
-                    const initialAttendanceData = students.map((student) => ({
-                        code: student.code, attendance: 'present' , homework: false, voc: "excellent"
-                    }));
-                    setAttendanceData(initialAttendanceData);
-                    setStudentsData(students);
-                } catch (error) {
-                    console.error('Error fetching students:', error);
-                    // Handle error as needed
-                } finally {
-                    // Set loadingState back to false after the API call is completed (success or failure)
-                    setLoadingState(false);
-                }
-            })();
+        if (selectedClass && selectedGroup && selectedDate) {
+            fetchStudentsData();
         }
-    }, [selectedGroup]);
+    }, [selectedDate ]);
 
     const handleAttendanceChange = (studentCode, selectedValue) => {
         setAttendanceData((prevAttendanceData) =>
             prevAttendanceData.map((data) =>
-                data.code === studentCode ? { ...data, attendance: selectedValue } : data
+                data.code === studentCode
+                    ? {
+                        ...data,
+                        attendance: selectedValue,
+                        voc: selectedValue === "absent" ? "absent" : vocData[studentCode] || "excellent",
+                        homework: selectedValue === "absent" ? false : homeworkData[studentCode] || false,
+                    }
+                    : data
+            )
+        );
+    };
+
+    const handleVocChange = (studentCode, selectedValue) => {
+        setVocData((prevVocData) => ({ ...prevVocData, [studentCode]: selectedValue }));
+
+        setAttendanceData((prevAttendanceData) =>
+            prevAttendanceData.map((data) =>
+                data.code === studentCode ? { ...data, voc: selectedValue } : data
+            )
+        );
+    };
+
+    const handleHomeworkChange = (studentCode, checked) => {
+        setHomeworkData((prevHomeworkData) => ({ ...prevHomeworkData, [studentCode]: checked }));
+
+        setAttendanceData((prevAttendanceData) =>
+            prevAttendanceData.map((data) =>
+                data.code === studentCode ? { ...data, homework: checked } : data
             )
         );
     };
@@ -66,28 +107,34 @@ export default function AttendanceForm({ classesOptions, groupsOptions }) {
     const handleSaveAttendance = async (event) => {
         event.preventDefault();
         const attendance = {
-            group_id: selectedGroup,
-            date: selectedDate,
-            attendanceData,
+            group_id: selectedGroup, date: selectedDate, attendanceData,
         };
 
         try {
             setLoadingState(true);
             await addAttendance(attendance);
+            displayToast({message: 'Attendance Saved Successfully', type: 'success'});
+            fetchStudentsData();
         } catch (error) {
             console.error('Error saving attendance:', error);
-            // Handle error as needed
-            displayToast({message:'Error Saving Attendance', type:'error'})
+            displayToast({message: 'Error Saving Attendance', type: 'error'});
         } finally {
             setLoadingState(false);
-            displayToast({message:'Attendance Saved Successfully', type:'success'})
         }
     };
 
-    console.log('attendanceData:', attendanceData)
+    const isRowDisabled = (student) => {
+        const attendanceForSelectedDate = student.attendance.find((entry) => isSameDay(new Date(entry.date), new Date(selectedDate)));
+        return !!attendanceForSelectedDate;
+    };
 
-    return (
-        <form onSubmit={handleSaveAttendance}>
+    const isSameDay = (date1, date2) => date1.getFullYear() === date2.getFullYear() && date1.getMonth() === date2.getMonth() && date1.getDate() === date2.getDate();
+
+    console.log("attendanceData", attendanceData)
+    console.log("vocData", vocData)
+    console.log("homeworkData", homeworkData)
+
+    return (<form onSubmit={handleSaveAttendance}>
             <div className="flex justify-between gap-3">
                 <Select
                     label='Class'
@@ -98,15 +145,11 @@ export default function AttendanceForm({ classesOptions, groupsOptions }) {
                     onChange={(e) => setSelectedClass(e.target.value)}
                     isRequired
                 >
-                    {classesOptions &&
-                        classesOptions.map((item) => (
-                            <SelectItem key={item.value} value={item.value}>
-                                {item.label}
-                            </SelectItem>
-                        ))}
+                    {classesOptions && classesOptions.map((item) => (<SelectItem key={item.value} value={item.value}>
+                            {item.label}
+                        </SelectItem>))}
                 </Select>
-                {selectedClass && (
-                    <>
+                {selectedClass && (<>
                         <Select
                             label='Group'
                             name='group_id'
@@ -116,12 +159,9 @@ export default function AttendanceForm({ classesOptions, groupsOptions }) {
                             onChange={(e) => setSelectedGroup(e.target.value)}
                             isRequired
                         >
-                            {groups &&
-                                groups.map((item) => (
-                                    <SelectItem key={item.value} value={item.value}>
-                                        {item.label}
-                                    </SelectItem>
-                                ))}
+                            {groups && groups.map((item) => (<SelectItem key={item.value} value={item.value}>
+                                    {item.label}
+                                </SelectItem>))}
                         </Select>
                         <Input
                             type='date'
@@ -132,12 +172,10 @@ export default function AttendanceForm({ classesOptions, groupsOptions }) {
                             value={selectedDate}
                             isRequired
                         />
-                    </>
-                )}
+                    </>)}
             </div>
 
-            {selectedGroup && (
-                <>
+            {selectedGroup && selectedDate && (<>
                     <Table aria-label="Attendance Table">
                         <TableHeader>
                             <TableColumn align="center">Name</TableColumn>
@@ -146,13 +184,11 @@ export default function AttendanceForm({ classesOptions, groupsOptions }) {
                             <TableColumn align="center">Homework</TableColumn>
                         </TableHeader>
                         <TableBody
-                            loadingContent={<Spinner />}
-                            items={studentsData}
+                            loadingContent={<Spinner/>}
                             loadingState={loadingState === true ? "loading" : "idle"}
-                            emptyContent={"No rows to display."}
+                            emptyContent={"لا يوجد طلبه لم يسجلوا الحضور لهذا اليوم"}
                         >
-                            {(item) => (
-                                <TableRow key={item.code}>
+                            {studentsData.map((item) => (<TableRow key={item.code} disabled={isRowDisabled(item)}>
                                     <TableCell align="center">{item.name}</TableCell>
                                     <TableCell align="center">
                                         <Select
@@ -160,17 +196,15 @@ export default function AttendanceForm({ classesOptions, groupsOptions }) {
                                             placeholder="Select Attendance"
                                             items={AttendanceOptions}
                                             isRequired
+                                            isDisabled={isRowDisabled(item)}
+                                            description={isRowDisabled(item) ? "Attendance already exists for this date" : null}
                                             aria-label={`Select Attendance for ${item.name}`}
                                             defaultSelectedKeys={["present"]}
-                                            onChange={(e) => {
-                                                handleAttendanceChange(item.code, e.target.value);
-                                            }}
+                                            onChange={(e) => handleAttendanceChange(item.code, e.target.value)}
                                         >
-                                            {(i) => (
-                                                <SelectItem key={i.value} value={i.value}>
+                                            {(i) => (<SelectItem key={i.value} value={i.value}>
                                                     {i.label}
-                                                </SelectItem>
-                                            )}
+                                                </SelectItem>)}
                                         </Select>
                                     </TableCell>
                                     <TableCell align="center">
@@ -180,48 +214,37 @@ export default function AttendanceForm({ classesOptions, groupsOptions }) {
                                             items={VocOptions}
                                             isRequired
                                             aria-label={`Select VOC for ${item.name}`}
-                                            defaultSelectedKeys={["excellent"]}
-                                            onChange={(e) => {
-                                                setAttendanceData((prevAttendanceData) =>
-                                                    prevAttendanceData.map((data) =>
-                                                        data.code === item.code
-                                                            ? { ...data, voc: e.target.value }
-                                                            : data
-                                                    )
-                                                )
-                                            }}
+                                            defaultSelectedKeys={[`${item.attendance === "absent" ? "absent" : "excellent"}`]}
+                                            isDisabled={isRowDisabled(item) || attendanceData.find((data) => data.code === item.code).attendance === "absent"}
+                                            description={isRowDisabled(item) ? "Attendance already exists for this date" : null}
+                                            onChange={(e) => handleVocChange(item.code, e.target.value)}
                                         >
-                                            {(i) => (
-                                                <SelectItem key={i.value} value={i.value}>
+                                            {(i) => (<SelectItem key={i.value} value={i.value}>
                                                     {i.label}
-                                                </SelectItem>
-                                            )}
+                                                </SelectItem>)}
                                         </Select>
                                     </TableCell>
                                     <TableCell align="center">
                                         <Checkbox
                                             name={`homework-${item.code}`}
-                                            onChange={(e) =>
-                                                setAttendanceData((prevAttendanceData) =>
-                                                    prevAttendanceData.map((data) =>
-                                                        data.code === item.code
-                                                            ? { ...data, homework: e.target.checked }
-                                                            : data
-                                                    )
-                                                )
-                                            }
+                                            onChange={(e) => handleHomeworkChange(item.code, e.target.checked)}
+                                            checked={item.attendance !== "absent" && item.homework}
                                             label="Homework"
+                                            isDisabled={isRowDisabled(item) || attendanceData.find((data) => data.code === item.code).attendance === "absent"}
+                                            description={isRowDisabled(item) ? "Attendance already exists for this date" : null}
                                         />
                                     </TableCell>
-                                </TableRow>
-                            )}
+                                </TableRow>))}
                         </TableBody>
                     </Table>
-                    <Button type="submit" disabled={loadingState}>
+                    <Button type="submit" disabled={
+                        loadingState === true ||
+                        !attendanceData.length ||
+                        attendanceData.some((data) => !data.attendance || !data.voc)
+                    }>
                         Save Attendance
                     </Button>
-                </>
-            )}
-        </form>
-    );
+                </>)}
+        </form>);
 }
+

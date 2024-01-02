@@ -8,7 +8,7 @@ export default function Attendance({attendance}) {
     const renderCell = useCallback((item, columnKey) => {
         switch (columnKey) {
             case "date":
-                return new Date(item.date).toLocaleDateString("en");
+                return new Date(item.date).toLocaleDateString("en-GB");
             case "status":
                 return item.status === "present" ? "Present" : item.status === "absent" ? "Absent" : "Late";
             default:

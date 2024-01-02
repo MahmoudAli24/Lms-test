@@ -32,7 +32,9 @@ import {SearchIcon} from "@/app/ui/Icons/SearchIcon";
 const fetcher = (...args) => fetch(...args).then((res) => res.json());
 
 export default function StudentsTable() {
-    const columns = [{name: "ID", uid: "id"}, {name: "NAME", uid: "name"} ,{name :"CLASS" , uid:"className"},{name :"GROUP" , uid:"groupName"}, {name: "ACTIONS", uid: "actions"},];
+    const columns = [{name: "ID", uid: "id"}, {name: "NAME", uid: "name"}, {
+        name: "CLASS", uid: "className"
+    }, {name: "GROUP", uid: "groupName"}, {name: "ACTIONS", uid: "actions"},];
     const rowsPerPage = 5;
     const {isOpen, onOpen, onOpenChange} = useDisclosure();
     const [page, setPage] = useState(1);
@@ -46,7 +48,7 @@ export default function StudentsTable() {
     }, [setSelectedStudent, onOpen]);
 
     const fields = useMemo(() => {
-        return "name,groupName,className,code";
+    return "name,code,groupName,className";
     }, []);
     const handleDeleteConfirm = async () => {
         try {
@@ -82,15 +84,12 @@ export default function StudentsTable() {
         }
         return 0;
     };
-
     const studentsData = students();
     const studentsCount = count();
 
     const pages = useMemo(() => {
         return studentsCount ? Math.ceil(studentsCount / rowsPerPage) : 1;
     }, [studentsCount, rowsPerPage]);
-
-    console.log("pages", pages);
 
     const renderCell = useCallback((item, columnKey) => {
         const cellValue = studentsData[columnKey];
@@ -124,14 +123,12 @@ export default function StudentsTable() {
             return <span>{item.code}</span>;
         } else if (columnKey === "groupName") {
             return <span>{item.groupName}</span>;
-        }
-        else if (columnKey === "className") {
+        } else if (columnKey === "className") {
             return <span>{item.className}</span>;
-        }
-        else {
+        } else {
             return cellValue;
         }
-    }, [studentsData , handleDeleteClick]);
+    }, [studentsData, handleDeleteClick]);
 
     const loadingState = isLoading || data.length === 0 || false ? "loading" : "idle";
 
@@ -242,7 +239,6 @@ export default function StudentsTable() {
                             color='success'
                             auto
                             onClick={handleDeleteConfirm}
-
                         >
                             Delete
                         </Button>

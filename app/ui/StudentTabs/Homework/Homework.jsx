@@ -10,7 +10,7 @@ export default function Homework({homework}) {
     const renderCell = useCallback((item, columnKey) => {
         switch (columnKey) {
             case "date":
-                return new Date(item.date).toLocaleDateString("en");
+                return new Date(item.date).toLocaleDateString("en-GB");
             case "status":
                 return item.status === false ? "Not Done" : "Done";
             default:

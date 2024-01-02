@@ -2,6 +2,9 @@ import {revalidatePath} from 'next/cache'
 import {NextResponse} from "next/server";
 import dbConnect from "../../libs/dbConnect";
 import Student from "../../models/Student";
+import Attendance from "@/app/models/Attendance";
+import Homework from "@/app/models/Homework";
+import Vocabulary from "@/app/models/Vocabulary";
 import Class from "@/app/models/Class";
 import Group from "@/app/models/Group";
 
@@ -9,8 +12,8 @@ export async function GET(req) {
     try {
         await dbConnect();
 
-        const page = +req.nextUrl.searchParams.get("page") ;
-        const rowsPerPage = +req.nextUrl.searchParams.get("rowsPerPage") ;
+        const page = +req.nextUrl.searchParams.get("page");
+        const rowsPerPage = +req.nextUrl.searchParams.get("rowsPerPage");
         const searchName = req.nextUrl.searchParams.get("name");
         const selectedFields = req.nextUrl.searchParams.get("fields"); // Fields to be selected by the client
         const groupId = req.nextUrl.searchParams.get("group_id");
@@ -20,42 +23,90 @@ export async function GET(req) {
             query.group_id = groupId;
         }
 
-
         if (searchName) {
             // If a name is provided, add a search condition to the query
-            query = { name: { $regex: new RegExp(searchName, 'i') } };
+            query = {name: {$regex: new RegExp(searchName, 'i')}};
         }
-
-        const projection = buildProjection(selectedFields); // Helper function to build the projection
-
+        const projection = buildProjection(selectedFields);
+        const students = await fetchStudents(query, projection, page, rowsPerPage, selectedFields);
         const count = await Student.countDocuments(query);
-        const students = await Student.find(query)
-            .populate('group_id', 'groupName -_id') // Populate groupName for the Group and exclude _id
-            .populate('class_id', 'className -_id') // Populate groupName for the Group and exclude _id
-            .select(projection) // Apply the projection to select fields
-            .skip((page - 1) * rowsPerPage)
-            .limit(rowsPerPage);
 
-        const simplifiedStudents = students.map(student => {
-            return {
-                code: student.code,
-                name: student.name,
-                className: student.class_id ? student.class_id.className : "Not Have Group",
-                groupName: student.group_id ? student.group_id.groupName : "Not Have Group",
-                attendance: student.attendance,
-                examGrades: student.examGrades,
-                homework: student.homework,
-                createdAt: student.createdAt,
-            }
-        });
         if (students.length > 0) {
-            return NextResponse.json({ students:simplifiedStudents, count });
+            return NextResponse.json({students, count});
         } else {
-            return NextResponse.json({ message: "No students found" });
+            return NextResponse.json({message: "No students found"});
         }
     } catch (error) {
         console.error("Error fetching students:", error);
-        return NextResponse.json({ message: "Internal Server Error" });
+        return NextResponse.json({message: "Internal Server Error"});
+    }
+}
+
+async function fetchStudents(query, projection, page, rowsPerPage, selectedFields) {
+    const populateFields = [];
+
+    if (selectedFields.includes("attendance")) {
+        populateFields.push('attendance');
+    }
+    if (selectedFields.includes("homework")) {
+        populateFields.push('homework');
+    }
+    if (selectedFields.includes("vocabulary")) {
+        populateFields.push('vocabulary');
+    }
+    if (selectedFields.includes("groupName")) {
+        populateFields.push('groupName')
+    }
+    if (selectedFields.includes("className")) {
+        populateFields.push('className');
+    }
+    const populateOptions = populateFields.map(field => {
+        switch (field) {
+            case 'homework':
+            case 'attendance':
+            case 'vocabulary':
+                return {
+                    path: field, select: 'status date -_id'
+                };
+
+            case 'groupName':
+                return {
+                    path: 'group_id', select: 'groupName'
+                };
+
+            case 'className':
+                return {
+                    path: 'class_id', select: 'className'
+                };
+
+            default:
+                return null;
+        }
+    }).filter(option => option !== null);
+
+    const students = await Student.find(query)
+        .populate(populateOptions)
+        .select(projection)
+        .skip((page - 1) * rowsPerPage)
+        .limit(rowsPerPage);
+
+
+    if (selectedFields.includes("className") || selectedFields.includes("groupName")) {
+        console.log("ss")
+        return students.map(student => ({
+            code: student.code,
+            name: student.name,
+            className: student.class_id ? student.class_id.className : "Not Have Group",
+            groupName: student.group_id ? student.group_id.groupName : "Not Have Group",
+            attendance: student.attendance,
+            vocabulary: student.vocabulary,
+            examGrades: student.examGrades,
+            homework: student.homework,
+            createdAt: student.createdAt,
+        }));
+    } else {
+        console.log("rrr")
+        return students;
     }
 }
 
@@ -63,10 +114,8 @@ export async function GET(req) {
 function buildProjection(selectedFields) {
     if (!selectedFields) {
         // If no specific fields are requested, return all fields except _id
-        return { _id: 0 };
+        return {_id: 0};
     }
-
-    // Split the selected fields and create a projection object
     const fieldsArray = selectedFields.split(',');
     const projection = {};
 
@@ -117,16 +166,8 @@ export async function POST(req) {
         // Save the student to the database
         const savedStudent = await newStudent.save();
         // Add the student to the class and group
-        await Class.findByIdAndUpdate(
-            studentData.class_id,
-            {$push: {student_ids: savedStudent._id}},
-            {new: true}
-        );
-        await Group.findByIdAndUpdate(
-            studentData.group_id,
-            {$push: {student_ids: savedStudent._id}},
-            {new: true}
-        );
+        await Class.findByIdAndUpdate(studentData.class_id, {$push: {student_ids: savedStudent._id}}, {new: true});
+        await Group.findByIdAndUpdate(studentData.group_id, {$push: {student_ids: savedStudent._id}}, {new: true});
         if (path) {
             revalidatePath(path)
         }
@@ -153,26 +194,18 @@ export async function PATCH(req) {
         // Update class and group if provided in the request
         if (studentData.class_id && studentData.group_id) {
             // Remove students from the old class and group
-            await Class.updateMany(
-                {student_ids: {$in: studentIds}},
-                {
-                    $pull: {
-                        student_ids: {$in: studentIds},
-                        "groups.$[].student_ids": {$in: studentIds},
-                    },
+            await Class.updateMany({student_ids: {$in: studentIds}}, {
+                $pull: {
+                    student_ids: {$in: studentIds}, "groups.$[].student_ids": {$in: studentIds},
                 },
-                {new: true}
-            );
+            }, {new: true});
 
             // Add students to the new class and group
-            const updatedClass = await Class.updateMany(
-                {code: studentData.class_id, "groups.code": studentData.group_id},
-                {
-                    $push: {student_ids: {$each: studentIds}},
-                    $addToSet: {"groups.$[].student_ids": {$each: studentIds}},
-                },
-                {new: true}
-            );
+            const updatedClass = await Class.updateMany({
+                code: studentData.class_id, "groups.code": studentData.group_id
+            }, {
+                $push: {student_ids: {$each: studentIds}}, $addToSet: {"groups.$[].student_ids": {$each: studentIds}},
+            }, {new: true});
 
             if (!updatedClass) {
                 return NextResponse.json({message: "New Class not found"});
@@ -180,11 +213,7 @@ export async function PATCH(req) {
         }
 
         // Update student data for each student
-        const updatedStudents = await Student.updateMany(
-            {code: {$in: studentIds}},
-            {$set: studentData},
-            {new: true}
-        );
+        const updatedStudents = await Student.updateMany({code: {$in: studentIds}}, {$set: studentData}, {new: true});
 
         if (!updatedStudents) {
             return NextResponse.json({message: "Error updating students"});
@@ -205,11 +234,7 @@ export async function DELETE(req) {
         if (!student) {
             return NextResponse.json({message: "Student not found"});
         }
-        await Class.findOneAndUpdate(
-            {code: student.class_id},
-            {$pull: {student_ids: code}},
-            {new: true}
-        );
+        await Class.findOneAndUpdate({code: student.class_id}, {$pull: {student_ids: code}}, {new: true});
         await Student.findOneAndDelete({code});
         return NextResponse.json({message: "Student deleted successfully"});
     } catch (error) {

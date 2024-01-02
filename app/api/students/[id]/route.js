@@ -15,36 +15,59 @@ export async function GET(req, { params }) {
 
         const projection = buildProjection(selectedFields);
 
-        let studentQuery = Student.findOne({ code }, projection)
-            .populate("attendance" , "status date -_id")
-            .populate("homework" , "status date -_id")
-            .populate("vocabulary" , "status date -_id")
-
-        if (selectedFields && (selectedFields.includes("className") || selectedFields.includes("groupName"))) {
-            studentQuery = studentQuery
-                .populate("class_id", "className")
-                .populate("group_id", "groupName")
-
-
-
-            const student = await studentQuery;
-
-            if (!student) {
-                return NextResponse.json({ message: "Student not found" });
-            }
-
-            const simplifiedStudent = mapStudentToSimplifiedFormat(student);
-
-            return NextResponse.json({ student : simplifiedStudent});
+        const populateFields = [];
+        if (selectedFields.includes("attendance")) {
+            populateFields.push('attendance');
+        }
+        if (selectedFields.includes("homework")) {
+            populateFields.push('homework');
+        }
+        if (selectedFields.includes("vocabulary")) {
+            populateFields.push('vocabulary');
+        }
+        if (selectedFields.includes("groupName")) {
+            populateFields.push('groupName')
+        }
+        if (selectedFields.includes("className")) {
+            populateFields.push('className');
         }
 
-        const student = await studentQuery;
+        const populateOptions = populateFields.map(field => {
+            switch (field) {
+                case 'homework':
+                case 'attendance':
+                case 'vocabulary':
+                    return {
+                        path: field, select: 'status date -_id'
+                    };
+
+                case 'groupName':
+                    return {
+                        path: 'group_id', select: 'groupName'
+                    };
+
+                case 'className':
+                    return {
+                        path: 'class_id', select: 'className'
+                    };
+
+                default:
+                    return null;
+            }
+        }).filter(option => option !== null);
+
+        const student = await Student.findOne({ code }).select(projection).populate(populateOptions);
 
         if (!student) {
-            return NextResponse.json({ message: "Student not found" });
+            return NextResponse.json({ message: "Student not found" }, { status: 404 });
         }
 
-        return NextResponse.json({ student });
+        if (selectedFields.includes("className") || selectedFields.includes("groupName")) {
+            return NextResponse.json({ student: mapStudentToSimplifiedFormat(student) });
+        }
+
+        return NextResponse.json({student});
+
     } catch (error) {
         console.error(error);
         return NextResponse.json({ message: "Error fetching student" });

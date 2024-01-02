@@ -5,6 +5,7 @@ export async function addAttendance(attendanceData) {
     try {
         const {data} = await axios.post(`${process.env.NEXT_PUBLIC_URL}/api/attendance`, attendanceData);
         revalidatePath("/api/students");
+        revalidatePath('/dashboard/attendance');
         return data;
     } catch (error) {
         console.error("Error adding attendance:", error);

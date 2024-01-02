@@ -7,7 +7,7 @@ export default function Vocabulary({vocabulary}) {
     const renderCell = useCallback((item, columnKey) => {
         switch (columnKey) {
             case "date":
-                return new Date(item.date).toLocaleDateString("en");
+                return new Date(item.date).toLocaleDateString("en-GB");
             case "status":
                 return item.status === "good" ? "Good" : item.status === "very good" ? "Very Good" : item.status === "excellent" ? "Excellent" : "Weak";
             default:
