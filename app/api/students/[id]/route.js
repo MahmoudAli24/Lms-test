@@ -1,11 +1,11 @@
 import Student from "../../../models/Student";
-import Attendance from "@/app/models/Attendance";
-import Homework from "@/app/models/Homework";
-import Vocabulary from "@/app/models/Vocabulary";
+// import Attendance from "@/app/models/Attendance";
+// import Homework from "@/app/models/Homework";
+// import Vocabulary from "@/app/models/Vocabulary";
 import Class from "@/app/models/Class";
 import Group from "@/app/models/Group";
 import dbConnect from "../../../libs/dbConnect";
-import {NextResponse} from "next/server";
+import { NextResponse } from "next/server";
 
 export async function GET(req, { params }) {
     try {
@@ -66,7 +66,7 @@ export async function GET(req, { params }) {
             return NextResponse.json({ student: mapStudentToSimplifiedFormat(student) });
         }
 
-        return NextResponse.json({student});
+        return NextResponse.json({ student });
 
     } catch (error) {
         console.error(error);
@@ -103,15 +103,15 @@ function mapStudentToSimplifiedFormat(student) {
     };
 }
 
-export async function PATCH(req, {params}) {
+export async function PATCH(req, { params }) {
     try {
         await dbConnect();
         const studentCode = +params.id;
         const studentData = await req.json();
-        const student = await Student.findOne({code: studentCode});
+        const student = await Student.findOne({ code: studentCode });
 
         if (!student) {
-            return NextResponse.json({message: "Student not found"} , {status: 404});
+            return NextResponse.json({ message: "Student not found" }, { status: 404 });
         }
 
         // Check if the class and group have changed
@@ -135,7 +135,7 @@ export async function PATCH(req, {params}) {
 
     } catch (error) {
         console.error(error);
-        return NextResponse.json({message: "Error updating student"});
+        return NextResponse.json({ message: "Error updating student" });
     }
 }
 
@@ -167,22 +167,22 @@ async function updateStudent(studentId, updatedData) {
     await Student.findByIdAndUpdate({ _id: studentId }, { ...updatedData }, { new: true });
 }
 
-export async function DELETE(req, {params}) {
+export async function DELETE(req, { params }) {
     const studentCode = +params.id;
     await dbConnect();
     try {
-        const student = await Student.findOne({code: studentCode});
+        const student = await Student.findOne({ code: studentCode });
         if (!student) {
-            return NextResponse.json({message: "Student not found"});
+            return NextResponse.json({ message: "Student not found" });
         }
-        await Class.findOneAndUpdate({code: student.class_id}, {$pull: {student_ids: student._id}}, {new: true});
+        await Class.findOneAndUpdate({ code: student.class_id }, { $pull: { student_ids: student._id } }, { new: true });
 
-        await Group.findOneAndUpdate({code: student.group_id}, {$pull: {student_ids: student._id}}, {new: true});
+        await Group.findOneAndUpdate({ code: student.group_id }, { $pull: { student_ids: student._id } }, { new: true });
 
-        await Student.findByIdAndDelete({_id: student._id});
-        return NextResponse.json({message: "Student deleted successfully"});
+        await Student.findByIdAndDelete({ _id: student._id });
+        return NextResponse.json({ message: "Student deleted successfully" });
     } catch (error) {
         console.error("Error deleting student:", error);
-        return NextResponse.json({message: "Internal Server Error"});
+        return NextResponse.json({ message: "Internal Server Error" });
     }
 }
