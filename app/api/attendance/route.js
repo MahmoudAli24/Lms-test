@@ -1,4 +1,3 @@
-// add Attendance route to app/api/attendance/route.js
 import dbConnect from "@/app/libs/dbConnect";
 import Attendance from "@/app/models/Attendance";
 import Vocabulary from "@/app/models/Vocabulary";
