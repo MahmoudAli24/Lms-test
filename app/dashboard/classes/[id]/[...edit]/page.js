@@ -8,10 +8,12 @@ export default async function editClassPage({params}) {
 
 
     return (<Card>
-        <CardBody>
-            <EditClassForm
-                classData={class_}
-            />
-        </CardBody>
+        <Card>
+            <CardBody>
+                <EditClassForm
+                    classData={class_}
+                />
+            </CardBody>
+        </Card>
     </Card>)
 }

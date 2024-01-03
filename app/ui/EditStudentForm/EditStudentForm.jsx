@@ -4,7 +4,7 @@ import {Button, Input} from "@nextui-org/react";
 import {Select, SelectItem} from "@nextui-org/select";
 import {useEffect, useState} from "react";
 import {editStudent} from "@/app/actions/studentsActions";
-import {displayToast} from "@/app/ui/displayToast ";
+import {displayToast} from "@/app/ui/displayToast";
 import {useRouter} from "next/navigation";
 
 function SubmitButton() {

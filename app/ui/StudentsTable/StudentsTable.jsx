@@ -26,7 +26,7 @@ import {EyeIcon} from "../Icons/EyeIcon";
 import {EditIcon} from "../Icons/EditIcon";
 import {DeleteIcon} from "../Icons/DeleteIcon";
 import {deleteStudent} from "@/app/actions/studentsActions";
-import {displayToast} from "@/app/ui/displayToast ";
+import {displayToast} from "@/app/ui/displayToast";
 import {SearchIcon} from "@/app/ui/Icons/SearchIcon";
 
 const fetcher = (...args) => fetch(...args).then((res) => res.json());
@@ -86,6 +86,8 @@ export default function StudentsTable() {
     };
     const studentsData = students();
     const studentsCount = count();
+
+    console.log(studentsData)
 
     const pages = useMemo(() => {
         return studentsCount ? Math.ceil(studentsCount / rowsPerPage) : 1;

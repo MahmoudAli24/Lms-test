@@ -1,4 +1,3 @@
-
 import getStudent from "@/app/actions/getStudent";
 import {Card, CardBody,} from "@nextui-org/react";
 import StudentTabs from "@/app/ui/StudentTabs/StudentTabs";
@@ -6,8 +5,7 @@ export default async function page({params}) {
     const code = +params.code
     const fields = 'name,code,className,groupName,attendance,exams,vocabulary,homework'
     const {student} = await getStudent(code , fields)
-    console.log("student", student)
-
+    console.log("student" , student)
     return(
         <div>
             <Card>

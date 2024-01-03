@@ -5,7 +5,7 @@ import {useEffect, useRef, useState} from "react";
 import addStudent from "@/app/actions/addStudent";
 import {Button, Input} from '@nextui-org/react';
 import {Select, SelectItem} from "@nextui-org/select";
-import {displayToast} from "@/app/ui/displayToast ";
+import {displayToast} from "@/app/ui/displayToast";
 
 function SubmitButton() {
     const {pending} = useFormStatus()

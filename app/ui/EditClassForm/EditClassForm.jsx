@@ -3,7 +3,7 @@ import {useEffect, useState} from "react";
 import {useFormState, useFormStatus} from "react-dom";
 import {Button, Input, useDisclosure} from "@nextui-org/react";
 import {editClass} from "@/app/actions/classesActions";
-import {displayToast} from "@/app/ui/displayToast ";
+import {displayToast} from "@/app/ui/displayToast";
 import RemoveGroupModal from "@/app/ui/RemoveGroupModal";
 import {deleteGroup} from "@/app/actions/groupsActions";
 

@@ -3,7 +3,7 @@ import {useEffect, useRef, useState} from "react";
 import {useFormState, useFormStatus} from "react-dom";
 import {Button, Input} from "@nextui-org/react";
 import {addClass} from "@/app/actions/classesActions";
-import {displayToast} from "@/app/ui/displayToast ";
+import {displayToast} from "@/app/ui/displayToast";
 
 function SubmitButton() {
     const {pending} = useFormStatus()

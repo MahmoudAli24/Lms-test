@@ -6,8 +6,7 @@ import {
     Button, Checkbox, Input, Spinner, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow
 } from "@nextui-org/react";
 import {addAttendance} from "@/app/actions/attendanceActions";
-import {displayToast} from "@/app/ui/displayToast ";
-import {revalidatePath} from "next/cache";
+import {displayToast} from "@/app/ui/displayToast";
 
 export default function AttendanceForm({classesOptions, groupsOptions}) {
     const [selectedClass, setSelectedClass] = useState(undefined);
@@ -50,7 +49,7 @@ export default function AttendanceForm({classesOptions, groupsOptions}) {
             const initialAttendanceData = filteredStudents.map((student) => ({
                 code: student.code,
                 attendance: 'present',
-                homework: false,
+                homework: true,
                 voc: 'excellent',
             }));
             setAttendanceData(initialAttendanceData);
@@ -77,7 +76,7 @@ export default function AttendanceForm({classesOptions, groupsOptions}) {
                         ...data,
                         attendance: selectedValue,
                         voc: selectedValue === "absent" ? "absent" : vocData[studentCode] || "excellent",
-                        homework: selectedValue === "absent" ? false : homeworkData[studentCode] || false,
+                        homework: selectedValue === "absent" ? false : homeworkData[studentCode] || true,
                     }
                     : data
             )
@@ -129,13 +128,9 @@ export default function AttendanceForm({classesOptions, groupsOptions}) {
     };
 
     const isSameDay = (date1, date2) => date1.getFullYear() === date2.getFullYear() && date1.getMonth() === date2.getMonth() && date1.getDate() === date2.getDate();
-
     console.log("attendanceData", attendanceData)
-    console.log("vocData", vocData)
-    console.log("homeworkData", homeworkData)
-
     return (<form onSubmit={handleSaveAttendance}>
-            <div className="flex justify-between gap-3">
+            <div className="flex justify-between gap-3 mb-3">
                 <Select
                     label='Class'
                     name='class_id'
@@ -214,7 +209,7 @@ export default function AttendanceForm({classesOptions, groupsOptions}) {
                                             items={VocOptions}
                                             isRequired
                                             aria-label={`Select VOC for ${item.name}`}
-                                            defaultSelectedKeys={[`${item.attendance === "absent" ? "absent" : "excellent"}`]}
+                                            selectedKeys={[`${attendanceData.find((data) => data.code === item.code).voc}`]}
                                             isDisabled={isRowDisabled(item) || attendanceData.find((data) => data.code === item.code).attendance === "absent"}
                                             description={isRowDisabled(item) ? "Attendance already exists for this date" : null}
                                             onChange={(e) => handleVocChange(item.code, e.target.value)}
@@ -228,7 +223,7 @@ export default function AttendanceForm({classesOptions, groupsOptions}) {
                                         <Checkbox
                                             name={`homework-${item.code}`}
                                             onChange={(e) => handleHomeworkChange(item.code, e.target.checked)}
-                                            checked={item.attendance !== "absent" && item.homework}
+                                            isSelected={attendanceData.find((data) => data.code === item.code).homework}
                                             label="Homework"
                                             isDisabled={isRowDisabled(item) || attendanceData.find((data) => data.code === item.code).attendance === "absent"}
                                             description={isRowDisabled(item) ? "Attendance already exists for this date" : null}
