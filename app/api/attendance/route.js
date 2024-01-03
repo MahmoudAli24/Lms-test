@@ -1,8 +1,8 @@
 // add Attendance route to app/api/attendance/route.js
 import dbConnect from "@/app/libs/dbConnect";
+import Homework from "@/app/models/Homework";
 import Attendance from "@/app/models/Attendance";
 import Vocabulary from "@/app/models/Vocabulary";
-import Homework from "@/app/models/Homework";
 import Student from "@/app/models/Student";
 
 async function checkAndCreateRecord(Model, student, group_id, date, grade, statusKey) {
@@ -40,22 +40,22 @@ async function checkAndCreateRecord(Model, student, group_id, date, grade, statu
 
 export async function POST(req) {
     try {
-        const {group_id, date, attendanceData} = await req.json();
+        const { group_id, date, attendanceData } = await req.json();
 
         await dbConnect();
 
-        for (const {attendance, voc, homework, code} of attendanceData) {
-            const student = await Student.findOne({code});
+        for (const { attendance, voc, homework, code } of attendanceData) {
+            const student = await Student.findOne({ code });
 
             await checkAndCreateRecord(Attendance, student, group_id, date, attendance, 'status');
             await checkAndCreateRecord(Vocabulary, student, group_id, date, voc, 'status');
             await checkAndCreateRecord(Homework, student, group_id, date, homework, 'status');
         }
 
-        return Response.json({message: "Attendance created successfully"});
+        return Response.json({ message: "Attendance created successfully" });
     } catch (error) {
         console.error("Error creating attendance:", error);
-        return {status: 500, body: {message: "Internal Server Error"}};
+        return { status: 500, body: { message: "Internal Server Error" } };
     }
 }
 
@@ -66,21 +66,21 @@ export async function GET(req) {
         await dbConnect();
         const group_id = req.nextUrl.searchParams.get("group_id");
         const date = req.nextUrl.searchParams.get("date");
-        const attendance = await Attendance.find({date, group: group_id}).select("-__v -date -group")
+        const attendance = await Attendance.find({ date, group: group_id }).select("-__v -date -group")
             .populate("student", "name code -_id")
-        const vocabulary = await Vocabulary.find({date, group: group_id}).select("-__v -date -group")
+        const vocabulary = await Vocabulary.find({ date, group: group_id }).select("-__v -date -group")
             .populate("student", "name code -_id")
-        const homework = await Homework.find({date, group: group_id}).select("-__v -date -group")
+        const homework = await Homework.find({ date, group: group_id }).select("-__v -date -group")
             .populate("student", "name code -_id")
 
         if (!attendance || !vocabulary || !homework) {
-            return Response.json({message: "Not Found"});
+            return Response.json({ message: "Not Found" });
         }
 
-        return Response.json({attendance, vocabulary, homework});
+        return Response.json({ attendance, vocabulary, homework });
     } catch (error) {
         console.error("Error fetching attendance:", error);
-        return Response.json({message: "Internal Server Error"});
+        return Response.json({ message: "Internal Server Error" });
     }
 }
 
@@ -89,10 +89,10 @@ export async function PATCH(req) {
     try {
         await dbConnect();
 
-        const {group_id, date, attendanceData} = await req.json();
+        const { group_id, date, attendanceData } = await req.json();
 
-        for (const {attendance, voc, homework, code} of attendanceData) {
-            const student = await Student.findOne({code});
+        for (const { attendance, voc, homework, code } of attendanceData) {
+            const student = await Student.findOne({ code });
 
             const attendanceRecord = await Attendance.findOne({
                 student: student._id,
@@ -129,10 +129,10 @@ export async function PATCH(req) {
 
         }
 
-        return Response.json({message: 'Attendance updated successfully'});
+        return Response.json({ message: 'Attendance updated successfully' });
     } catch (error) {
         console.error('Error updating attendance:', error);
-        return Response.json({message: 'Internal Server Error'});
+        return Response.json({ message: 'Internal Server Error' });
     }
 }
 
