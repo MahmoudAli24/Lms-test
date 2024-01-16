@@ -2,7 +2,6 @@ import {useCallback} from "react";
 import TableData from "@/app/ui/TableData/TableData";
 
 export default function Attendance({attendance}) {
-    console.log("attendance", attendance)
     const columns = [{name: "DATE", uid: "date"}, {name: "STATUS", uid: "status"}];
 
     const renderCell = useCallback((item, columnKey) => {
@@ -10,7 +9,7 @@ export default function Attendance({attendance}) {
             case "date":
                 return new Date(item.date).toLocaleDateString("en-GB");
             case "status":
-                return item.status === "present" ? "Present" : item.status === "absent" ? "Absent" : "Late";
+                return item.status === "present" ? <span className="text-green-500">Present</span> : item.status === "absent" ? <span className="text-red-500">Absent</span> : <span className="text-yellow-500">Late</span>;
             default:
                 return null;
         }

@@ -9,7 +9,11 @@ export default function Vocabulary({vocabulary}) {
             case "date":
                 return new Date(item.date).toLocaleDateString("en-GB");
             case "status":
-                return item.status === "good" ? "Good" : item.status === "very good" ? "Very Good" : item.status === "excellent" ? "Excellent" : "Weak";
+                return item.status === "good" ? <span className="text-success">Good</span>
+                    : item.status === "very good" ? <span className="text-success">Very Good</span>
+                        : item.status === "excellent" ? <span className="text-success">Excellent</span>
+                            : item.status ==="weak" ? <span className="text-danger">Weak</span>
+                                : <span className="text-danger">Absent</span>;
             default:
                 return null;
         }

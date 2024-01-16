@@ -26,6 +26,8 @@ const fetcher = (...args) => fetch(...args).then((res) => res.json());
 function ClassesTable() {
     const columns = [
         {name: "NAME", uid: "name"},
+        {name:"NUMBER OF STUDENTS", uid:"numberOfStudents"},
+        {name: "GROUPS", uid: "groups"},
         {name: "ACTIONS", uid: "actions"},
     ];
 
@@ -62,6 +64,8 @@ function ClassesTable() {
     const classesData = classes()
     const classesCount = count()
 
+    console.log("classesData", classesData)
+
     const pages = useMemo(() => {
         return classesCount ? Math.ceil(classesCount / rowsPerPage) : 1;
     }, [classesCount, rowsPerPage]);
@@ -95,8 +99,12 @@ function ClassesTable() {
                 );
             } else if (columnKey === "name") {
                 return <span>{item.className}</span>;
+            } else if (columnKey === "numberOfStudents") {
+                return <span>{item.student_ids.length}</span>;
+            }else if (columnKey === "groups") {
+                return <span>{item.groups.length}</span>;
             } else {
-                return cellValue;
+                return cellValue
             }
         },
         [classesData]
@@ -137,14 +145,13 @@ function ClassesTable() {
                 color='primary'
                 variant='shadow'
             >
-                Add Student
+                Add Class
             </Button>
         </div>);
     }, [ onSearchChange, filterValue, onClear]);
 
     return (
         <Table
-            color='primary'
             aria-label='Example table with client side pagination'
             topContent={topContent}
             topContentPlacement='outside'
@@ -169,13 +176,7 @@ function ClassesTable() {
                 {(column) => (
                     <TableColumn
                         key={column.uid}
-                        align={
-                            column.uid === "actions"
-                                ? "right"
-                                : column.uid === "id"
-                                    ? "left"
-                                    : "center"
-                        }
+                        align={column.uid === "actions" ? "center" : "start"}
                     >
                         {column.name}
                     </TableColumn>

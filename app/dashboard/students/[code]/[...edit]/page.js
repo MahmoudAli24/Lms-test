@@ -3,6 +3,7 @@ import {getClassesOptions} from "@/app/actions/classesActions";
 import {getGroupsOptions} from "@/app/actions/groupsActions";
 import getStudent from "@/app/actions/getStudent";
 import {Card, CardBody} from "@nextui-org/react";
+import Heading from "@/app/ui/Heading/Heading";
 
 export default async function editStudentPage({params}) {
     const code = +params.code
@@ -13,6 +14,7 @@ export default async function editStudentPage({params}) {
     return (
         <Card>
             <CardBody>
+                <Heading >Edit Student</Heading>
                 <EditStudentForm
                     classesOptions={classesOptions}
                     groupsOptions={groupsOptions}

@@ -1,6 +1,7 @@
 "use server"
 import axios from "axios";
 import z from "zod";
+import {revalidatePath} from "next/cache";
 
 export async function addClass(prevState,formData) {
         const groups = [];
@@ -108,6 +109,7 @@ export async function editClass(prevState, data) {
         try {
             const res = await axios.patch(`${process.env.NEXT_PUBLIC_URL}/api/classes/${id}`, dataParsed);
             if (res.status === 200) {
+                revalidatePath("/api/classes")
                 return {message: "Successfully updated", type: 'success'}
             } else if (res.status === 404) {
                 return {message: "Group not found", type: 'error'}

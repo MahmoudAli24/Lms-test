@@ -1,7 +1,8 @@
 import Student from "../../../models/Student";
-// import Attendance from "@/app/models/Attendance";
-// import Homework from "@/app/models/Homework";
-// import Vocabulary from "@/app/models/Vocabulary";
+import Attendance from "@/app/models/Attendance";
+import Homework from "@/app/models/Homework";
+import Vocabulary from "@/app/models/Vocabulary";
+import Exam from "@/app/models/Exam";
 import Class from "@/app/models/Class";
 import Group from "@/app/models/Group";
 import dbConnect from "../../../libs/dbConnect";
@@ -31,6 +32,9 @@ export async function GET(req, { params }) {
         if (selectedFields.includes("className")) {
             populateFields.push('className');
         }
+        if (selectedFields.includes("exams")) {
+            populateFields.push('exams');
+        }
 
         const populateOptions = populateFields.map(field => {
             switch (field) {
@@ -49,6 +53,11 @@ export async function GET(req, { params }) {
                 case 'className':
                     return {
                         path: 'class_id', select: 'className'
+                    };
+
+                case 'exams':
+                    return {
+                        path: 'exams', select: 'date grade examName -_id'
                     };
 
                 default:
@@ -96,7 +105,7 @@ function mapStudentToSimplifiedFormat(student) {
         className: student.class_id ? student.class_id.className : "Not Have Class",
         groupName: student.group_id ? student.group_id.groupName : "Not Have Group",
         attendance: student.attendance,
-        examGrades: student.examGrades,
+        exams: student.exams,
         homework: student.homework,
         vocabulary: student.vocabulary,
         createdAt: student.createdAt,

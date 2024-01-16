@@ -4,6 +4,10 @@ import Link from "next/link";
 
 import {
     Button,
+    Dropdown,
+    DropdownItem,
+    DropdownMenu,
+    DropdownTrigger,
     Input,
     Modal,
     ModalBody,
@@ -28,19 +32,31 @@ import {DeleteIcon} from "../Icons/DeleteIcon";
 import {deleteStudent} from "@/app/actions/studentsActions";
 import {displayToast} from "@/app/ui/displayToast";
 import {SearchIcon} from "@/app/ui/Icons/SearchIcon";
+import {ChevronDownIcon} from "@/app/ui/Icons/ChevronDownIcon";
 
 const fetcher = (...args) => fetch(...args).then((res) => res.json());
 
+    const INITIAL_VISIBLE_COLUMNS = ["id", "name", "phone", "className", "groupName", "actions"];
 export default function StudentsTable() {
     const columns = [{name: "ID", uid: "id"}, {name: "NAME", uid: "name"}, {
-        name: "CLASS", uid: "className"
-    }, {name: "GROUP", uid: "groupName"}, {name: "ACTIONS", uid: "actions"},];
+        name: "PHONE", uid: "phone"
+    }, {name: "CLASS", uid: "className"}, {name: "GROUP", uid: "groupName"}, {name: "ACTIONS", uid: "actions"},];
     const rowsPerPage = 5;
     const {isOpen, onOpen, onOpenChange} = useDisclosure();
     const [page, setPage] = useState(1);
     const [selectedStudent, setSelectedStudent] = useState(null);
     const [isLoaded, setIsLoaded] = useState(false);
     const [filterValue, setFilterValue] = useState("");
+    const [visibleColumns, setVisibleColumns] = useState(new Set(INITIAL_VISIBLE_COLUMNS));
+
+    const headerColumns = useMemo(() => {
+        if(visibleColumns.size === 0) {
+            return [
+                {name: "ID", uid: "id"},
+            ];
+        }
+        return columns.filter((column) => visibleColumns.has(column.uid));
+    }, [visibleColumns]);
 
     const handleDeleteClick = useCallback((student) => {
         setSelectedStudent(student);
@@ -48,7 +64,7 @@ export default function StudentsTable() {
     }, [setSelectedStudent, onOpen]);
 
     const fields = useMemo(() => {
-    return "name,code,groupName,className";
+        return "name,code,groupName,className,phone"
     }, []);
     const handleDeleteConfirm = async () => {
         try {
@@ -66,6 +82,7 @@ export default function StudentsTable() {
             console.log(e);
         }
     };
+
     const {
         data, isLoading
     } = useSWR(`${process.env.NEXT_PUBLIC_URL}/api/students?page=${page}&rowsPerPage=${rowsPerPage}${filterValue ? `&name=${filterValue}` : ""}&fields=${fields}`, fetcher, {
@@ -86,8 +103,6 @@ export default function StudentsTable() {
     };
     const studentsData = students();
     const studentsCount = count();
-
-    console.log(studentsData)
 
     const pages = useMemo(() => {
         return studentsCount ? Math.ceil(studentsCount / rowsPerPage) : 1;
@@ -127,6 +142,8 @@ export default function StudentsTable() {
             return <span>{item.groupName}</span>;
         } else if (columnKey === "className") {
             return <span>{item.className}</span>;
+        } else if (columnKey === "phone") {
+            return <span>{item.phone}</span>;
         } else {
             return cellValue;
         }
@@ -149,28 +166,58 @@ export default function StudentsTable() {
     }, []);
 
     const topContent = useMemo(() => {
-        return (<div className="flex justify-between gap-3 items-end">
-            <Input
-                isClearable
-                className="w-full mobile:max-w-[calc(100%/3*2)] laptop:max-w-[50%]"
-                size={"sm"}
-                placeholder="Search by name..."
-                startContent={<SearchIcon/>}
-                value={filterValue}
-                onClear={() => onClear()}
-                onValueChange={onSearchChange}
-            />
-            <Button
-                as={Link}
-                href={`/dashboard/addStudent`}
-                className='w-fit'
-                color='primary'
-                variant='shadow'
-            >
-                Add Student
-            </Button>
-        </div>);
-    }, [onSearchChange, filterValue, onClear]);
+        return (
+            <div className="grid grid-cols-6 items-center">
+                <Input
+                    isClearable
+                    size={"sm"}
+                    placeholder="Search by name..."
+                    startContent={<SearchIcon />}
+                    value={filterValue}
+                    onClear={() => onClear()}
+                    onValueChange={onSearchChange}
+                    className="col-start-1 col-end-3"
+                />
+                <span className="col-end-7 col-span-2 flex flex-row gap-2 justify-end">
+                    <Dropdown className="w-fit">
+                    <DropdownTrigger className="hidden tablet:flex">
+                        <Button endContent={<ChevronDownIcon className="text-small" />} variant="flat">
+                            Columns
+                        </Button>
+                    </DropdownTrigger>
+                    <DropdownMenu
+                        disallowEmptySelection
+                        aria-label="Table Columns"
+                        closeOnSelect={false}
+                        selectedKeys={visibleColumns}
+                        selectionMode="multiple"
+                        onSelectionChange={setVisibleColumns}
+                    >
+                        {columns.map((column) => (
+                            <DropdownItem key={column.uid}>
+                                {column.name}
+                            </DropdownItem>
+                        ))}
+                    </DropdownMenu>
+                </Dropdown>
+                <Button
+                    as={Link}
+                    href={`/dashboard/addStudent`}
+                    className="w-fit"
+                    color="primary"
+                    variant="shadow"
+                >
+                    Add Student
+                </Button>
+                </span>
+            </div>
+        );
+    }, [onSearchChange, filterValue, onClear, visibleColumns]);
+
+    function capitalize(str) {
+        return str.charAt(0).toUpperCase() + str.slice(1);
+    }
+
 
     return (<>
         <Table
@@ -193,12 +240,12 @@ export default function StudentsTable() {
                 wrapper: "min-h-[222px]",
             }}
         >
-            <TableHeader columns={columns}>
+            <TableHeader columns={headerColumns}>
                 {(column) => (<TableColumn
                     key={column.uid}
                     align={column.uid === "actions" ? "right" : column.uid === "id" ? "left" : "center"}
                 >
-                    {column.name}
+                    {capitalize(column.name)}
                 </TableColumn>)}
             </TableHeader>
             <TableBody

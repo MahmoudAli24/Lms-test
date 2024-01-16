@@ -60,6 +60,9 @@ async function fetchStudents(query, projection, page, rowsPerPage, selectedField
     if (selectedFields.includes("className")) {
         populateFields.push('className');
     }
+    if (selectedFields.includes("exams")) {
+        populateFields.push('exams');
+    }
     const populateOptions = populateFields.map(field => {
         switch (field) {
             case 'homework':
@@ -79,6 +82,11 @@ async function fetchStudents(query, projection, page, rowsPerPage, selectedField
                     path: 'class_id', select: 'className'
                 };
 
+            case "exams":
+                return {
+                    path: "exams", select: "grade examName date -_id"
+                }
+
             default:
                 return null;
         }
@@ -92,12 +100,12 @@ async function fetchStudents(query, projection, page, rowsPerPage, selectedField
 
 
     if (selectedFields.includes("className") || selectedFields.includes("groupName")) {
-        console.log("ss")
         return students.map(student => ({
             code: student.code,
             name: student.name,
             className: student.class_id ? student.class_id.className : "Not Have Group",
             groupName: student.group_id ? student.group_id.groupName : "Not Have Group",
+            phone: student.phone,
             attendance: student.attendance,
             vocabulary: student.vocabulary,
             examGrades: student.examGrades,
@@ -105,7 +113,6 @@ async function fetchStudents(query, projection, page, rowsPerPage, selectedField
             createdAt: student.createdAt,
         }));
     } else {
-        console.log("rrr")
         return students;
     }
 }

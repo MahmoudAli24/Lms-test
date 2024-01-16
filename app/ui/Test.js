@@ -1,141 +1,81 @@
 "use client";
-import {
-    Button, Checkbox,
-    Select,
-    SelectItem, Spinner,
-    Table,
-    TableBody,
-    TableCell,
-    TableColumn,
-    TableHeader,
-    TableRow
-} from "@nextui-org/react";
-import {useEffect, useState} from "react";
-import {getStudents} from "@/app/actions/studentsActions";
 
-export default function Test() {
-    const [disabled, setDisabled] = useState(true);
-    const [studentsData, setStudentsData] = useState([]);
-    const shouldDisable = () => {
-        setDisabled(prevDisabled => !prevDisabled);
-        console.log('disabled:', disabled);
-    };
+import {useEffect} from "react";
+import {calculateSemesterAttendance} from "@/app/functions/attendanceAnalysis";
+import ChartAVH from "@/app/ui/ChartAVH/ChartAVH";
+import Chart from 'chart.js/auto'
 
-    const animals = [
-        { label: 'Alligator', value: 'alligator' },
-        { label: 'Bison', value: 'bison' },
-        { label: 'Chicken', value: 'chicken' },
-        { label: 'Duck', value: 'duck' },
-        { label: 'Elephant', value: 'elephant' },
-    ];
-
+export default function Test({students}) {
+    console.log(students)
     useEffect(() => {
-        (async () => {
-            try {
-                const {students} = await getStudents(null, "658dedcd77178b34461a62ce");
-                setStudentsData(students);
-            } catch (error) {
-                console.error('Error fetching students:', error);
-                // Handle error as needed
-            }
-        })();
-    }, []);
-    // const studentsData = [
-    //     {
-    //         "name": "Ahmed",
-    //         "code": 1,
-    //         "class_id": "5f9c0a8a2e5e7a2a0c2e4c8a",
-    //         "group_id": "658dedcd77178b34461a62ce"
-    //     },
-    //     {
-    //         "name": "Ahmed",
-    //         "code": 2,
-    //         "class_id": "5f9c0a8a2e5e7a2a0c2e4c8a",
-    //         "group_id": "658dedcd77178b34461a62ce"
-    //     },
-    //     {
-    //         "name": "Ahmed",
-    //         "code": 3,
-    //         "class_id": "5f9c0a8a2e5e7a2a0c2e4c8a",
-    //         "group_id": "658dedcd77178b34461a62ce"
-    //     },
-    //     {
-    //         "name": "Ahmed",
-    //         "code": 4,
-    //         "class_id": "5f9c0a8a2e5e7a2a0c2e4c8a",
-    //         "group_id": "658dedcd77178b34461a62ce"
-    //     },
-    //     {
-    //         "name": "Ahmed",
-    //         "code": 5,
-    //         "class_id": "5f9c0a8a2e5e7a2a0c2e4c8a",
-    //         "group_id": "658dedcd77178b34461a62ce"
-    //     },
-    //     {
-    //         "name": "Ahmed",
-    //         "code": 6,
-    //         "class_id": "5f9c0a8a2e5e7a2a0c2e4c8a",
-    //         "group_id": "658dedcd77178b34461a62ce"
-    //     },
-    //     {
-    //         "name": "Ahmed",
-    //         "code": 7,
-    //         "class_id": "5f9c0a8a2e5e7a2a0c2e4c8a",
-    //         "group_id": "658dedcd77178b34461a62ce"
-    //     },
-    // ]
+        // const groupedStudents = groupStudentsByAttendance(students);
+        // const alwaysPresent = groupedStudents.alwaysPresent.map((student) => ({
+        //     ...student,
+        //     attendancePercentage: calculateAttendancePercentage(student),
+        // }));
+        // const oftenAbsent = groupedStudents.oftenAbsent.map((student) => ({
+        //     ...student,
+        //     attendancePercentage: calculateAttendancePercentage(student),
+        // }));
+        // const occasionallyLate = groupedStudents.occasionallyLate.map((student) => ({
+        //     ...student,
+        //     attendancePercentage: calculateAttendancePercentage(student),
+        // }));
+        // console.log(alwaysPresent)
+        // console.log(oftenAbsent)
+        // console.log(occasionallyLate)
+        // console.log(groupedStudents)
+        const semesterAttendanceData = calculateSemesterAttendance(students, new Date("2024-01-01"), new Date("2024-12-31"));
+        console.log("semesterAttendanceData => ", semesterAttendanceData)
 
-    // console.log('studentsData:', studentsData)
+    }, [students])
 
+    const classNames = Array.from(new Set(students.map((student) => student.className)));
     return (
         <div>
-            <Button onClick={shouldDisable}>Click me</Button>
-            <form>
-                <Table aria-label="Attendance Table">
-                    <TableHeader>
-                        <TableColumn align="center">Name</TableColumn>
-                        <TableColumn align="center">Attendance</TableColumn>
-                        <TableColumn align="center">Homework</TableColumn>
-                    </TableHeader>
-                    <TableBody
-                        loadingContent={<Spinner />}
-                        // items={studentsData}
-                        emptyContent={"No rows to display."}
-                    >
-                        {studentsData.map((student, i) => (
-                            <TableRow key={i}>
-                                <TableCell align="center">{student.name}</TableCell>
-                                <TableCell align="center">
-                                    <Checkbox
-                                        isDisabled={disabled}
-                                        indeterminate={false}
-                                        checked={false}
-                                        onChange={() => {}}
-                                    />
-                                </TableCell>
-                                <TableCell align="center">
-                                    <Select
-                                        aria-label="Attendance Table"
-                                        isDisabled={disabled}
-                                        placeholder="Select a homework status"
-                                        initialValue="alligator"
-                                        width="100%"
-                                        size="small"
-                                        onChange={() => {}}
-                                    >
-                                        {animals.map((animal, i) => (
-                                            <SelectItem key={i} value={animal.value}>
-                                                {animal.label}
-                                            </SelectItem>
+            <div>
+                <h1>Student Performance Dashboard</h1>
+
+                {classNames.map((className) => {
+                    const classStudents = students.filter((student) => student.className === className);
+
+                    // Calculate semester attendance and get absent students
+                    const {
+                        semesterAttendancePercentage,
+                        absentStudents
+                    } = calculateSemesterAttendance(classStudents, new Date("2024-01-01"), new Date("2024-12-31"));
+
+                    return (
+                        <div key={className}>
+                            <h2>{`Class: ${className}`}</h2>
+
+                            {/* Display Semester Attendance */}
+                            <p>{`Semester Attendance Percentage: ${semesterAttendancePercentage}%`}</p>
+
+                            {/* Display Absent Students */}
+                            {absentStudents.length > 0 && (
+                                <div>
+                                    <h3>Absent Students:</h3>
+                                    <ul>
+                                        {absentStudents.map((student) => (
+                                            <li key={student.code}>{`${student.name} - ${student.code}`}</li>
                                         ))}
-                                    </Select>
-                                </TableCell>
-                            </TableRow>
-                        )
-                        )}
-                    </TableBody>
-                </Table>
-            </form>
+                                    </ul>
+                                </div>
+                            )}
+
+                            {/* Additional Charts (e.g., AttendanceChart, VocabularyChart, HomeworkChart) */}
+                            <div>
+                                <h3>Additional Charts:</h3>
+                                {/* Include other charts here */}
+                                <ChartAVH students={classStudents} type="attendance"/>
+                                <ChartAVH students={classStudents}  type="vocabulary"/>
+                                <ChartAVH students={classStudents}  type="homework"/>
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
         </div>
     )
 }

@@ -5,14 +5,13 @@ import TableData from "@/app/ui/TableData/TableData";
 export default function Homework({homework}) {
     const columns = [{name: "DATE", uid: "date"}, {name: "STATUS", uid: "status"}];
 
-    console.log("homework", homework)
-
     const renderCell = useCallback((item, columnKey) => {
         switch (columnKey) {
             case "date":
                 return new Date(item.date).toLocaleDateString("en-GB");
             case "status":
-                return item.status === false ? "Not Done" : "Done";
+                return item.status === false ? <span className="text-red-500">Not Done</span>
+                    : <span className="text-green-500">Done</span>;
             default:
                 return null;
         }

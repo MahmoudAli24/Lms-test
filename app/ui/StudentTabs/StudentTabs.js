@@ -3,6 +3,7 @@ import {Tab, Tabs} from "@nextui-org/react";
 import Attendance from "@/app/ui/StudentTabs/Attendance/Attendance";
 import Homework from "@/app/ui/StudentTabs/Homework/Homework";
 import Vocabulary from "@/app/ui/StudentTabs/Vocabulary/Vocabulary";
+import Exams from "@/app/ui/StudentTabs/Exams/Exams";
 
 export default function StudentTabs({vocabulary, homework, examGrades, attendance}) {
     return(
@@ -17,9 +18,8 @@ export default function StudentTabs({vocabulary, homework, examGrades, attendanc
                 <Homework homework={homework}/>
             </Tab>
             <Tab title="Exam Grades">
-                Exam Grades
+                <Exams examGrades={examGrades}/>
             </Tab>
-
         </Tabs>
     )
 }

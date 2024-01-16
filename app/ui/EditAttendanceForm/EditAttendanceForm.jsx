@@ -12,7 +12,6 @@ export default function EditAttendanceForm({classesOptions, groupsOptions}) {
     const [selectedClass, setSelectedClass] = useState(undefined);
     const [selectedGroup, setSelectedGroup] = useState(undefined);
     const [selectedDate, setSelectedDate] = useState(undefined);
-    const [studentsData, setStudentsData] = useState([]);
     const [loadingState, setLoadingState] = useState(false);
     const [attendanceData, setAttendanceData] = useState([]);
     const [vocData, setVocData] = useState({});
@@ -50,9 +49,6 @@ export default function EditAttendanceForm({classesOptions, groupsOptions}) {
             setLoadingState(false);
         }
     };
-
-
-    console.log("attendanceData", attendanceData)
 
     useEffect(() => {
         if (selectedClass && selectedGroup && selectedDate) {
@@ -109,7 +105,7 @@ export default function EditAttendanceForm({classesOptions, groupsOptions}) {
 
     // Render the form
     return (<form onSubmit={handleSaveAttendance}>
-        <div className="flex justify-between gap-3">
+        <div className="flex justify-between gap-3 mb-3">
             <Select
                 label='Class'
                 name='class_id'
@@ -207,7 +203,7 @@ export default function EditAttendanceForm({classesOptions, groupsOptions}) {
                     </TableRow>))}
                 </TableBody>
             </Table>
-            <Button type="submit"
+            <Button type="submit" className={"mt-3"} auto variant="solid" color="primary"
                     disabled={loadingState === true || !attendanceData.length || attendanceData.some((data) => !data.attendance || !data.voc)}>
                 Save Attendance
             </Button>

@@ -14,7 +14,6 @@ export default function RootLayout({ children }) {
       <body className={WorkSans.className}>
         <Providers>
           <Nav />
-
           {children}
         </Providers>
       </body>

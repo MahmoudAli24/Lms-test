@@ -7,6 +7,7 @@ import {
 } from "@nextui-org/react";
 import {addAttendance} from "@/app/actions/attendanceActions";
 import {displayToast} from "@/app/ui/displayToast";
+import {isSameDay} from "@/app/functions/isSameDay";
 
 export default function AttendanceForm({classesOptions, groupsOptions}) {
     const [selectedClass, setSelectedClass] = useState(undefined);
@@ -127,8 +128,7 @@ export default function AttendanceForm({classesOptions, groupsOptions}) {
         return !!attendanceForSelectedDate;
     };
 
-    const isSameDay = (date1, date2) => date1.getFullYear() === date2.getFullYear() && date1.getMonth() === date2.getMonth() && date1.getDate() === date2.getDate();
-    console.log("attendanceData", attendanceData)
+
     return (<form onSubmit={handleSaveAttendance}>
             <div className="flex justify-between gap-3 mb-3">
                 <Select
@@ -232,7 +232,7 @@ export default function AttendanceForm({classesOptions, groupsOptions}) {
                                 </TableRow>))}
                         </TableBody>
                     </Table>
-                    <Button type="submit" disabled={
+                    <Button type="submit" className={"mt-3"} auto variant="solid" color="primary" disabled={
                         loadingState === true ||
                         !attendanceData.length ||
                         attendanceData.some((data) => !data.attendance || !data.voc)

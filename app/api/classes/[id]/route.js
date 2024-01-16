@@ -22,7 +22,7 @@ export async function GET(req, {params}) {
     const classCode = params.id;
     await dbConnect();
     try {
-        const class_ = await Class.findById(classCode).select("-student_ids").populate("groups", "-student_ids -class_id -__v");
+        const class_ = await Class.findById(classCode).select("-student_ids").populate("groups", "-class_id -__v");
         if (!class_) {
             return NextResponse.json({message: "Class not found"});
         }

@@ -15,8 +15,8 @@ const studentSchema = new Schema({
         type: Schema.Types.ObjectId, ref: "Group", required: true , index: true
     }, attendance: [{
         type: Schema.Types.ObjectId, ref: "Attendance"
-    }], examGrades: [{
-        type: Schema.Types.ObjectId, ref: "ExamGrade"
+    }], exams: [{
+        type: Schema.Types.ObjectId, ref: "Exam"
     }], homework: [{
         type: Schema.Types.ObjectId, ref: "Homework"
     }], vocabulary: [{

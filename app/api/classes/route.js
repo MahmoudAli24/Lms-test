@@ -19,8 +19,7 @@ export async function GET(req) {
 
         const count = await ClassModel.countDocuments(query);
         const classes = await ClassModel.find(query)
-            .select("-student_ids")
-            .populate("groups", "-student_ids -class_id -__v")
+            .populate("groups", "-class_id -__v")
             .skip((page - 1) * rowsPerPage)
             .limit(rowsPerPage);
         if (classes.length > 0) {

@@ -1,5 +1,5 @@
+"use client";
 import {toast} from 'react-toastify';
-
 export const displayToast = (status) => {
 const theme = localStorage.getItem('theme') || 'light';
     const message = status.message

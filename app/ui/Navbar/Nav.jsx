@@ -12,13 +12,17 @@ import Link from "next/link";
 import { ThemeSwitcher } from "../theme/ThemeSwitcher";
 import { Suspense, useState } from "react";
 import ThemeSwitcherSkeleton from "../theme/ThemeSwitcherSkeleton";
+import {usePathname} from "next/navigation";
 function Nav() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const menuItems = ["Home", "Dashboard", "Students", "Classes"];
+  const menuItems = ["Home", "Dashboard", "Students", "Classes" ,"Attendance" , "Edit Attendance"];
+  const pathname = usePathname()
   return (
     <Navbar
       maxWidth='2xl'
       className='drop-shadow-lg dark:border-b-1 dark:border-indigo-400'
+      isMenuOpen={isMenuOpen}
+      onMenuOpenChange={setIsMenuOpen}
     >
       <NavbarContent>
         <NavbarMenuToggle
@@ -27,7 +31,7 @@ function Nav() {
         />
         <NavbarBrand>
           <h1 className='text-inherit text-2xl font-medium text-blue-500'>
-            Student Lms
+            <Link href='/'>Student LMS</Link>
           </h1>
         </NavbarBrand>
       </NavbarContent>
@@ -37,7 +41,7 @@ function Nav() {
           <Suspense fallback={<ThemeSwitcherSkeleton />}>
             <ThemeSwitcher />
           </Suspense>
-          <Link href='/dashboard'>Dashboard</Link>
+          {pathname === "/" && <Link href='/dashboard'>Dashboard</Link>}
         </NavbarItem>
       </NavbarContent>
       <NavbarMenu>
@@ -51,6 +55,7 @@ function Nav() {
                     ? "danger"
                     : "foreground"
               }
+              onClick={() => setIsMenuOpen(false)}
               className='w-full'
               href={
                 item === "Home"
@@ -61,7 +66,11 @@ function Nav() {
                       ? "/dashboard/students"
                       : item === "Classes"
                         ? "/dashboard/classes"
-                        : "/"
+                        : item === "Attendance"
+                          ? "/dashboard/attendance"
+                          : item === "Edit Attendance"
+                            ? "/dashboard/edit-attendance"
+                            : "/"
               }
               size='md'
             >

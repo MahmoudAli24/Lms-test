@@ -6,7 +6,7 @@ export default function Layout(props) {
   return (
     <main className='tablet:flex'>
       <SideBar />
-      <section className='p-4 tablet:w-[calc(100%-250px)] '>
+      <section className='p-4 tablet:w-[calc(100%-250px)] tablet:ml-[250px]'>
         {props.children}
         {props.modal}
         <ToastContainer 
