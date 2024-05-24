@@ -76,7 +76,7 @@ function AddExamForm({groupsOptions, classesOptions}) {
                 data.student_id === id
                     ? {
                         ...data,
-                        grade: parseInt(grade)
+                        grade: parseInt(grade) ? parseInt(grade) : -1,
                     }
                     : data
             )
@@ -111,7 +111,6 @@ function AddExamForm({groupsOptions, classesOptions}) {
             examData
         }
         const req = await addStudentsExam(data)
-        console.log("req", req)
         if (req) {
             displayToast({type: "success", message: "Exam Added Successfully"})
             setSelectedClass("");

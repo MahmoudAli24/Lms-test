@@ -7,7 +7,7 @@ const examSchema = new Schema({
     student_id: {
         type: mongoose.Schema.Types.ObjectId, ref: 'Student', index: true,
     }, examName: {
-        type: String, required: true,
+        type: String, required: true, index: true,
     }, group_id: {
         type: mongoose.Schema.Types.ObjectId, ref: 'Group', index: true,
     }, date: {

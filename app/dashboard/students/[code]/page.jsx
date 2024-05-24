@@ -6,7 +6,6 @@ export default async function page({params}) {
     const code = +params.code
     const fields = 'name,code,className,groupName,attendance,exams,vocabulary,homework'
     const {student} = await getStudent(code , fields)
-    const {attendance , homework} = student
     return(
         <div>
             <Card>
@@ -24,11 +23,6 @@ export default async function page({params}) {
                         <StudentTabs attendance={student.attendance} examGrades={student.exams}
                                      homework={student.homework} vocabulary={student.vocabulary}/>
                     </div>
-                </CardBody>
-            </Card>
-            <Card className="mt-3">
-                <CardBody>
-                    <StudentChart attendance={attendance} homework={homework} />
                 </CardBody>
             </Card>
         </div>

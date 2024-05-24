@@ -6,7 +6,6 @@ import ChartAVH from "@/app/ui/ChartAVH/ChartAVH";
 import Chart from 'chart.js/auto'
 
 export default function Test({students}) {
-    console.log(students)
     useEffect(() => {
         // const groupedStudents = groupStudentsByAttendance(students);
         // const alwaysPresent = groupedStudents.alwaysPresent.map((student) => ({
@@ -26,7 +25,6 @@ export default function Test({students}) {
         // console.log(occasionallyLate)
         // console.log(groupedStudents)
         const semesterAttendanceData = calculateSemesterAttendance(students, new Date("2024-01-01"), new Date("2024-12-31"));
-        console.log("semesterAttendanceData => ", semesterAttendanceData)
 
     }, [students])
 

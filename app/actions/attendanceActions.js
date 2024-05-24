@@ -16,7 +16,7 @@ export async function addAttendance(attendanceData) {
 
 export async function getAttendanceByDate(group, date) {
     try {
-        const {data} = await axios.get(`${process.env.NEXT_PUBLIC_URL}/api/attendance?group_id=${group}&date=${date}`);
+        const data = await fetch(`${process.env.NEXT_PUBLIC_URL}/api/attendance?group_id=${group}&date=${date}` ,{cache:'no-store'}).then((res) => res.json());
         const {attendance, vocabulary, homework} = data;
         const combinedData = [
             ...attendance.map((entry) => ({code: entry.student.code, attendance: entry.status , name: entry.student.name})),

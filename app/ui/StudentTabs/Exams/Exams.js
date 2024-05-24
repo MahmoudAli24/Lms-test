@@ -3,7 +3,6 @@ import TableData from "@/app/ui/TableData/TableData";
 
 export default function Exams({examGrades}) {
     const columns = [{name: "Exam Name" , uid: "examName"},{name: "DATE", uid: "date"}, {name: "DEGREE", uid: "degree"}];
-    console.log("examGrades" , examGrades)
     const renderCell = useCallback((item, columnKey) => {
         switch (columnKey) {
             case "date":

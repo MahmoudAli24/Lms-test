@@ -1,5 +1,5 @@
 "use client";
-import {useMemo, useState, useCallback} from "react";
+import {useCallback, useEffect, useMemo, useState} from "react";
 import Link from "next/link";
 
 import {
@@ -25,29 +25,31 @@ import {
     Tooltip,
     useDisclosure,
 } from "@nextui-org/react";
-import useSWR, {mutate} from "swr";
 import {EyeIcon} from "../Icons/EyeIcon";
 import {EditIcon} from "../Icons/EditIcon";
 import {DeleteIcon} from "../Icons/DeleteIcon";
-import {deleteStudent} from "@/app/actions/studentsActions";
+import {deleteStudent, getStudentsPagination} from "@/app/actions/studentsActions";
 import {displayToast} from "@/app/ui/displayToast";
 import {SearchIcon} from "@/app/ui/Icons/SearchIcon";
 import {ChevronDownIcon} from "@/app/ui/Icons/ChevronDownIcon";
-
-const fetcher = (...args) => fetch(...args).then((res) => res.json());
+import {revalidateTag} from "next/cache";
 
     const INITIAL_VISIBLE_COLUMNS = ["id", "name", "phone", "className", "groupName", "actions"];
 export default function StudentsTable() {
-    const columns = [{name: "ID", uid: "id"}, {name: "NAME", uid: "name"}, {
-        name: "PHONE", uid: "phone"
-    }, {name: "CLASS", uid: "className"}, {name: "GROUP", uid: "groupName"}, {name: "ACTIONS", uid: "actions"},];
+    const columns = useMemo(() => {
+        return [{name: "ID", uid: "id"}, {name: "NAME", uid: "name"}, {
+            name: "PHONE", uid: "phone"
+        }, {name: "CLASS", uid: "className"}, {name: "GROUP", uid: "groupName"}, {name: "ACTIONS", uid: "actions"},];
+    }, []);
     const rowsPerPage = 5;
     const {isOpen, onOpen, onOpenChange} = useDisclosure();
     const [page, setPage] = useState(1);
     const [selectedStudent, setSelectedStudent] = useState(null);
-    const [isLoaded, setIsLoaded] = useState(false);
     const [filterValue, setFilterValue] = useState("");
     const [visibleColumns, setVisibleColumns] = useState(new Set(INITIAL_VISIBLE_COLUMNS));
+    const [studentsData, setStudentsData] = useState([]);
+    const [studentsCount , setStudentsCount] = useState(0);
+    const [isLoading ,setIsLoaded] = useState(false);
 
     const headerColumns = useMemo(() => {
         if(visibleColumns.size === 0) {
@@ -56,7 +58,7 @@ export default function StudentsTable() {
             ];
         }
         return columns.filter((column) => visibleColumns.has(column.uid));
-    }, [visibleColumns]);
+    }, [columns, visibleColumns]);
 
     const handleDeleteClick = useCallback((student) => {
         setSelectedStudent(student);
@@ -68,12 +70,15 @@ export default function StudentsTable() {
     }, []);
     const handleDeleteConfirm = async () => {
         try {
+            setIsLoaded(true)
             const req = await deleteStudent(selectedStudent.code);
             if (req.type === 'success') {
                 displayToast(req)
                 onOpenChange();
-                await mutate(`${process.env.NEXT_PUBLIC_URL}/api/students?page=${page}&rowsPerPage=${rowsPerPage}}${filterValue ? `&name=${filterValue}` : ""}&fields=${fields}`);
-                setIsLoaded(true)
+                await fetchStudentsData()
+                revalidateTag('students')
+                setPage(page-1)
+                setIsLoaded(false)
 
             } else {
                 displayToast(req)
@@ -82,27 +87,23 @@ export default function StudentsTable() {
             console.log(e);
         }
     };
-
-    const {
-        data, isLoading
-    } = useSWR(`${process.env.NEXT_PUBLIC_URL}/api/students?page=${page}&rowsPerPage=${rowsPerPage}${filterValue ? `&name=${filterValue}` : ""}&fields=${fields}`, fetcher, {
-        keepPreviousData: true, revalidateOnFocus: false, revalidateOnReconnect: false, revalidateOnMount: true,
-    });
-    const students = () => {
-        if (data) {
-            return data.students;
+    const fetchStudentsData = useCallback(async () => {
+        try {
+            setIsLoaded(true)
+            const {students , count} = await getStudentsPagination(fields, page, rowsPerPage, filterValue);
+            setStudentsData(students);
+            setStudentsCount(count);
+            setIsLoaded(false)
+            return students;
+        } catch (e) {
+            console.log(e);
         }
-        return [];
-    };
+    }, [fields, page, filterValue]);
+    
+    useEffect(() => {
+           fetchStudentsData();
+    }, [fetchStudentsData]);
 
-    const count = () => {
-        if (data) {
-            return data.count;
-        }
-        return 0;
-    };
-    const studentsData = students();
-    const studentsCount = count();
 
     const pages = useMemo(() => {
         return studentsCount ? Math.ceil(studentsCount / rowsPerPage) : 1;
@@ -149,7 +150,6 @@ export default function StudentsTable() {
         }
     }, [studentsData, handleDeleteClick]);
 
-    const loadingState = isLoading || data.length === 0 || false ? "loading" : "idle";
 
     const onSearchChange = useCallback((value) => {
         if (value) {
@@ -167,7 +167,7 @@ export default function StudentsTable() {
 
     const topContent = useMemo(() => {
         return (
-            <div className="grid grid-cols-6 items-center">
+            <div className="tablet:grid laptop:grid-cols-6 tablet:grid-cols-2 grid-cols-1 gap-2 items-center flex flex-col">
                 <Input
                     isClearable
                     size={"sm"}
@@ -176,11 +176,11 @@ export default function StudentsTable() {
                     value={filterValue}
                     onClear={() => onClear()}
                     onValueChange={onSearchChange}
-                    className="col-start-1 col-end-3"
+                    className="tablet:col-start-1 tablet:col-end-3"
                 />
                 <span className="col-end-7 col-span-2 flex flex-row gap-2 justify-end">
                     <Dropdown className="w-fit">
-                    <DropdownTrigger className="hidden tablet:flex">
+                    <DropdownTrigger className="flex">
                         <Button endContent={<ChevronDownIcon className="text-small" />} variant="flat">
                             Columns
                         </Button>
@@ -251,7 +251,7 @@ export default function StudentsTable() {
             <TableBody
                 items={studentsData ? studentsData : []}
                 loadingContent={<Spinner/>}
-                loadingState={loadingState}
+                loadingState={isLoading ? "loading" : "idle"}
                 emptyContent={"No rows to display."}
             >
                 {(item) => (<TableRow key={item.code}>

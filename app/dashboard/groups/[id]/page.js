@@ -3,6 +3,10 @@ import StudentsGroupTable from "@/app/ui/StudentsGroupTable/StudentsGroupTable";
 import Heading from "@/app/ui/Heading/Heading";
 import {Card, CardBody} from "@nextui-org/react";
 
+export const metadata = {
+    title: 'Group Page',
+    description: 'Group Page',
+}
 export default async function groupPage({params}) {
     const {id} = params;
     const {group} = await getGroup(id);

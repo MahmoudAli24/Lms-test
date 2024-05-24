@@ -10,6 +10,9 @@ const menuItems = {
     "Edit Attendance": "/dashboard/edit-attendance",
     Exams: "/dashboard/exams",
     "Add Exam": "/dashboard/add-exam",
+    "Edit Exam": "/dashboard/edit-exam",
+    "Add User": "/dashboard/addUser",
+    "Users": "/dashboard/users",
 };
 
 export default function SideBar() {

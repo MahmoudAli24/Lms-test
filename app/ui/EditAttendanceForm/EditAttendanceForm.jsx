@@ -6,6 +6,7 @@ import {
 } from '@nextui-org/react';
 import {getAttendanceByDate, updateAttendance} from "@/app/actions/attendanceActions";
 import {displayToast} from "@/app/ui/displayToast";
+import {format} from "date-fns";
 
 export default function EditAttendanceForm({classesOptions, groupsOptions}) {
     // State variables
@@ -16,6 +17,7 @@ export default function EditAttendanceForm({classesOptions, groupsOptions}) {
     const [attendanceData, setAttendanceData] = useState([]);
     const [vocData, setVocData] = useState({});
     const [homeworkData, setHomeworkData] = useState({});
+    const [editDate, setEditDate] = useState(undefined);
 
     const groups = groupsOptions.filter((group) => group.class_id === selectedClass);
 
@@ -33,7 +35,6 @@ export default function EditAttendanceForm({classesOptions, groupsOptions}) {
         setLoadingState(true);
         try {
             const data = await getAttendanceByDate(selectedGroup, selectedDate);
-
             const initialAttendanceData = data.map((item) => ({
                 code: item.code,
                 name: item.name,
@@ -41,7 +42,6 @@ export default function EditAttendanceForm({classesOptions, groupsOptions}) {
                 voc: item.vocabulary,
                 homework: item.homework,
             }));
-
             setAttendanceData(initialAttendanceData);
         } catch (error) {
             console.error('Error fetching students:', error);
@@ -86,7 +86,7 @@ export default function EditAttendanceForm({classesOptions, groupsOptions}) {
     const handleSaveAttendance = async (event) => {
         event.preventDefault();
         const updatedAttendance = {
-            group_id: selectedGroup, date: selectedDate, attendanceData,
+            group_id: selectedGroup, date: editDate, attendanceData, oldDate: selectedDate,
         };
 
         try {
@@ -105,12 +105,11 @@ export default function EditAttendanceForm({classesOptions, groupsOptions}) {
 
     // Render the form
     return (<form onSubmit={handleSaveAttendance}>
-        <div className="flex justify-between gap-3 mb-3">
+        <div className="laptop:grid-cols-3 tablet:grid-cols-2 grid-cols-1 grid gap-3 mb-3">
             <Select
                 label='Class'
                 name='class_id'
                 placeholder='Select Class'
-                className="w-[calc(25%-0.15rem)]"
                 value={selectedClass}
                 onChange={(e) => setSelectedClass(e.target.value)}
                 isRequired
@@ -119,34 +118,45 @@ export default function EditAttendanceForm({classesOptions, groupsOptions}) {
                     {item.label}
                 </SelectItem>))}
             </Select>
-            {selectedClass && (<>
-                <Select
-                    label='Group'
-                    name='group_id'
-                    placeholder='Select Group'
-                    className="w-[calc(25%-0.15rem)]"
-                    value={selectedGroup}
-                    onChange={(e) => setSelectedGroup(e.target.value)}
-                    isRequired
-                >
-                    {groups && groups.map((item) => (<SelectItem key={item.value} value={item.value}>
-                        {item.label}
-                    </SelectItem>))}
-                </Select>
-                <Input
-                    type='date'
-                    label='Date'
-                    name='date'
-                    placeholder='Select Date'
-                    onChange={(e) => setSelectedDate(e.target.value)}
-                    value={selectedDate}
-                    isRequired
-                />
-            </>)}
+            <Select
+                label='Group'
+                name='group_id'
+                placeholder='Select Group'
+                value={selectedGroup}
+                onChange={(e) => setSelectedGroup(e.target.value)}
+                isRequired
+            >
+                {groups && groups.map((item) => (<SelectItem key={item.value} value={item.value}>
+                    {item.label}
+                </SelectItem>))}
+            </Select>
+            <Input
+                type='date'
+                label='Date'
+                name='date'
+                placeholder='Select Date'
+                onChange={(e) => setSelectedDate(e.target.value) || setEditDate(e.target.value)}
+                value={selectedDate}
+                isRequired
+                className="tablet:col-span-2 laptop:col-span-1"
+            />
         </div>
 
         {selectedGroup && selectedDate && (<>
-            <Table aria-label="Attendance Table">
+
+            <Table aria-label="Attendance Table"
+                   topContent={<div className="grid tablet:grid-cols-2 mobile:grid-cols-1">
+                       <Input type="date"
+                                label="Edit Date"
+                                name="edit_date"
+                                placeholder="Select Date"
+                                onChange={(e) => setEditDate(e.target.value)}
+                                value={editDate}
+                                isRequired
+                                className="mobile:col-span-1"
+                       />
+                   </div>}
+            >
                 <TableHeader>
                     <TableColumn align="center">Name</TableColumn>
                     <TableColumn align="center">Attendance</TableColumn>
@@ -160,7 +170,7 @@ export default function EditAttendanceForm({classesOptions, groupsOptions}) {
                 >
                     {attendanceData.map((item) => (<TableRow key={item.code}>
                         <TableCell align="center">{item.name}</TableCell>
-                        <TableCell align="center">
+                        <TableCell align="center"  className="min-w-32">
                             <Select
                                 name={`attendance-${item.code}`}
                                 placeholder="Select Attendance"
@@ -175,7 +185,7 @@ export default function EditAttendanceForm({classesOptions, groupsOptions}) {
                                 </SelectItem>)}
                             </Select>
                         </TableCell>
-                        <TableCell align="center">
+                        <TableCell align="center" className="min-w-36">
                             <Select
                                 name={`voc-${item.code}`}
                                 placeholder="Select VOC"
@@ -186,7 +196,11 @@ export default function EditAttendanceForm({classesOptions, groupsOptions}) {
                                 isDisabled={attendanceData.find((data) => data.code === item.code).attendance === "absent"}
                                 onChange={(e) => handleVocChange(item.code, e.target.value)}
                             >
-                                {(i) => (<SelectItem key={i.value} value={i.value}>
+                                {(i) => (<SelectItem
+                                    classNames={{
+                                        title:"initial",
+                                    }}
+                                    key={i.value} value={i.value}>
                                     {i.label}
                                 </SelectItem>)}
                             </Select>

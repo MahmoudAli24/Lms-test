@@ -4,6 +4,10 @@ import AttendanceForm from "@/app/ui/AttendanceForm/AttendanceForm";
 import {getGroupsOptions} from "@/app/actions/groupsActions";
 import Heading from "@/app/ui/Heading/Heading";
 
+export const metadata = {
+    title: 'Attendance',
+    description: 'Attendance page for students and teachers',
+}
 export default async function AttendancePage() {
     const classesOptions = await getClassesOptions();
     const groupsOptions = await getGroupsOptions();

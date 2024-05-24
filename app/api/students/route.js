@@ -1,4 +1,3 @@
-import {revalidatePath} from 'next/cache'
 import {NextResponse} from "next/server";
 import dbConnect from "../../libs/dbConnect";
 import Student from "../../models/Student";
@@ -18,7 +17,6 @@ export async function GET(req) {
         const selectedFields = req.nextUrl.searchParams.get("fields"); // Fields to be selected by the client
         const groupId = req.nextUrl.searchParams.get("group_id");
         let query = {};
-
         if (groupId) {
             query.group_id = groupId;
         }
@@ -41,6 +39,7 @@ export async function GET(req) {
         return NextResponse.json({message: "Internal Server Error"});
     }
 }
+
 
 async function fetchStudents(query, projection, page, rowsPerPage, selectedFields) {
     const populateFields = [];
@@ -68,24 +67,16 @@ async function fetchStudents(query, projection, page, rowsPerPage, selectedField
             case 'homework':
             case 'attendance':
             case 'vocabulary':
-                return {
-                    path: field, select: 'status date -_id'
-                };
+                return {path: field, select: 'status date -_id'};
 
             case 'groupName':
-                return {
-                    path: 'group_id', select: 'groupName'
-                };
+                return {path: 'group_id', select: 'groupName'};
 
             case 'className':
-                return {
-                    path: 'class_id', select: 'className'
-                };
+                return {path: 'class_id', select: 'className'};
 
-            case "exams":
-                return {
-                    path: "exams", select: "grade examName date -_id"
-                }
+            case 'exams':
+                return {path: 'exams', select: 'grade examName date -_id'};
 
             default:
                 return null;
@@ -101,6 +92,7 @@ async function fetchStudents(query, projection, page, rowsPerPage, selectedField
 
     if (selectedFields.includes("className") || selectedFields.includes("groupName")) {
         return students.map(student => ({
+            _id: student._id,
             code: student.code,
             name: student.name,
             className: student.class_id ? student.class_id.className : "Not Have Group",
@@ -108,7 +100,7 @@ async function fetchStudents(query, projection, page, rowsPerPage, selectedField
             phone: student.phone,
             attendance: student.attendance,
             vocabulary: student.vocabulary,
-            examGrades: student.examGrades,
+            exams: student.exams,
             homework: student.homework,
             createdAt: student.createdAt,
         }));
@@ -136,13 +128,21 @@ function buildProjection(selectedFields) {
 export async function POST(req) {
     const path = req.nextUrl.searchParams.get('path')
     const studentData = await req.json();
-    console.log("studentData", studentData)
     await dbConnect();
 
     try {
         // Create a new instance of the Student model
+        const studentsCodes = await Student.find().select('code')
+        const generateUniqueId = (existingCodes) => {
+            let newId;
+            do {
+                newId = Math.floor(Math.random() * 100000);
+            } while (existingCodes.includes(newId));
+            return newId;
+        };
+        const newCode = generateUniqueId(studentsCodes.map(student => student.code));
         const newStudent = new Student({
-            code: studentData.code,
+            code: newCode,
             name: studentData.name,
             class_id: studentData.class_id,
             group_id: studentData.group_id,
@@ -175,9 +175,6 @@ export async function POST(req) {
         // Add the student to the class and group
         await Class.findByIdAndUpdate(studentData.class_id, {$push: {student_ids: savedStudent._id}}, {new: true});
         await Group.findByIdAndUpdate(studentData.group_id, {$push: {student_ids: savedStudent._id}}, {new: true});
-        if (path) {
-            revalidatePath(path)
-        }
         return NextResponse.json({savedStudent});
     } catch (error) {
         console.error("Error saving student:", error);

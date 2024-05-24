@@ -19,6 +19,8 @@ export default function AddStudentForm({classesOptions, groupsOptions}) {
     const [state, formAction] = useFormState(addStudent, null)
     const [selectedClass, setSelectedClass] = useState('')
     const groups = groupsOptions && groupsOptions.filter((item) => item.class_id === selectedClass)
+
+
     useEffect(() => {
         if (state && state.type === 'success') {
             displayToast(state)
@@ -28,9 +30,8 @@ export default function AddStudentForm({classesOptions, groupsOptions}) {
         }
     }, [state])
     return (<form action={formAction} ref={formRef}>
-        <div className='flex flex-wrap items-center justify-center gap-3 mb-3'>
+        <div className="laptop:grid-cols-4 tablet:grid-cols-2 grid-cols-1 grid gap-3 mb-3">
             <Input
-                className='w-[calc(100%/4-0.15rem)]'
                 name='name'
                 type='text'
                 label='Name'
@@ -38,26 +39,16 @@ export default function AddStudentForm({classesOptions, groupsOptions}) {
                 isRequired
             />
             <Input
-                name='code'
-                type='text'
-                label='Code'
-                placeholder='Enter Student Code'
-                className='appearance-none w-[calc(25%-0.15rem)]'
-                isRequired
-            />
-            <Input
                 name='phone'
                 type='number'
                 label='Phone'
                 placeholder='Enter Student Phone'
-                className='appearance-none w-[calc(25%-0.15rem)]'
                 isRequired
             />
             <Select
                 label='Class'
                 name='class_id'
                 placeholder='Select Class'
-                className="w-[calc(25%-0.15rem)]"
                 value={selectedClass}
                 onChange={(e) => setSelectedClass(e.target.value)}
                 isRequired
@@ -66,12 +57,10 @@ export default function AddStudentForm({classesOptions, groupsOptions}) {
                     {item.label}
                 </SelectItem>))}
             </Select>
-            {selectedClass && (
                 <Select
                     label='Group'
                     name='group_id'
                     placeholder='Select Group'
-                    className="w-[calc(25%-0.15rem)]"
                     isRequired
                 >
                     {groups && groups.map((item) => (
@@ -80,7 +69,6 @@ export default function AddStudentForm({classesOptions, groupsOptions}) {
                         </SelectItem>
                     ))}
                 </Select>
-            )}
         </div>
         <SubmitButton/>
     </form

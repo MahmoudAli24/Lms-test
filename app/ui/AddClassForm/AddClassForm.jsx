@@ -38,42 +38,50 @@ function AddClassForm() {
 
     return (
         <form action={formAction} ref={formRef}>
-            <Input
-                name="className"
-                type="text"
-                label="Class Name"
-                placeholder="Enter Class Name"
-                required
-            />
-            {groups.map((group, index) => (
-                <div
-                    key={index}
-                    className='flex flex-wrap items-center justify-center gap-3 mb-3'
-                >
+            <div
+                className="grid tablet:grid-cols-2 grid-cols-1 gap-3"
+            >
+                <div>
                     <Input
-                        className='w-full sm:w-1/2'
-                        name={`group-${index}`}
-                        type='text'
-                        label={`Group ${index + 1}`}
-                        placeholder={`Enter Group ${index + 1} Name`}
-
+                        name="className"
+                        type="text"
+                        label="Class Name"
+                        placeholder="Enter Class Name"
+                        isRequired
                     />
-                    {index > 0 && (
-                        <Button
-                            type='button'
-                            color='danger'
-                            auto
-                            onClick={() => handleRemoveGroup(index)}
-                        >
-                            Remove Group
-                        </Button>
-                    )}
                 </div>
-            ))}
-            <Button type='button' color='secondary' auto onClick={handleAddGroup}>
+                <div>
+                    {groups.map((group, index) => (
+                        <div
+                            key={index}
+                            className="flex items-center justify-center space-x-3"
+                        >
+                            <Input
+                                name={`group-${index}`}
+                                type='text'
+                                label={`Group ${index + 1}`}
+                                placeholder={`Enter Group ${index + 1} Name`}
+                                isRequired
+                                className="mb-3"
+                            />
+                            {index > 0 && (
+                                <Button
+                                    type='button'
+                                    color='danger'
+                                    auto
+                                    onClick={() => handleRemoveGroup(index)}
+                                >
+                                    Delete
+                                </Button>
+                            )}
+                        </div>
+                    ))}
+                </div>
+            </div>
+            <Button className="mr-2" type='button' color='secondary' auto onClick={handleAddGroup}>
                 Add Group
             </Button>
-            <SubmitButton />
+            <SubmitButton/>
         </form>
     );
 }

@@ -10,6 +10,7 @@ import {useCallback, useState} from "react";
 import {deleteGroup} from "@/app/actions/groupsActions";
 import {displayToast} from "@/app/ui/displayToast";
 import RemoveGroupModal from "@/app/ui/RemoveGroupModal";
+import {calculateAttendancePercentage} from "@/app/functions/attendanceAnalysis";
 
 export default function StudentsGroupTable({student_ids}) {
     const {isOpen, onOpen, onOpenChange} = useDisclosure();
@@ -20,21 +21,18 @@ export default function StudentsGroupTable({student_ids}) {
     }]
 
     const individualAttendanceRates = student_ids.map((student) => {
-        const presentCount = student.attendance.filter((entry) => entry.status === 'present').length;
-        const totalEntries = student.attendance.length;
-        const attendanceRate = (presentCount / totalEntries) * 100 || 0; // Handle division by zero
+        const attendanceRate = calculateAttendancePercentage(student)
         return {
-            attendanceRate: attendanceRate.toFixed(2) + '%',
+            attendanceRate: isNaN(attendanceRate) ? "0.00%" : attendanceRate + "%",
         };
     });
+
     const students = student_ids.map((student, index) => {
         return {
             ...student,
             ...individualAttendanceRates[index],
         };
     })
-
-    console.log("students" , students)
 
     const renderCell = useCallback((item, columnKey) => {
         const cellValue = students[columnKey];

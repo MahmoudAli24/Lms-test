@@ -51,12 +51,11 @@ function VocHomeworkReport({classesOptions, groupsOptions}) {
             console.log(e)
         }
     }
-    console.log("selectedStudents" , selectedStudents)
     useEffect(() => {
         if (selectedClass && selectedGroups && selectedDate && vocStatus && homeworkStatus) {
             fetchStudentsStatus()
         }
-    }, [selectedClass, selectedGroups, selectedDate, vocStatus, homeworkStatus , page]);
+    }, [selectedGroups, selectedDate, vocStatus, homeworkStatus , page]);
 
     const columns = [{name: "ID", uid: "id"}, {name: "NAME", uid: "name"}, {
         name: "PHONE", uid: "phone"

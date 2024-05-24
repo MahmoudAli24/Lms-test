@@ -64,8 +64,6 @@ function ClassesTable() {
     const classesData = classes()
     const classesCount = count()
 
-    console.log("classesData", classesData)
-
     const pages = useMemo(() => {
         return classesCount ? Math.ceil(classesCount / rowsPerPage) : 1;
     }, [classesCount, rowsPerPage]);

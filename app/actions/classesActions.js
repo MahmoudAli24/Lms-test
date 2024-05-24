@@ -15,8 +15,6 @@ export async function addClass(prevState,formData) {
         groups
     }
 
-    console.log("groups", groups)
-
     const schema = z.object({
         className: z.string(),
         groups: z.array(z.object({
@@ -48,10 +46,8 @@ export async function addClass(prevState,formData) {
 
 export async function getClasses() {
     try {
-        const res = await axios.get(`${process.env.NEXT_PUBLIC_URL}/api/classes`);
-        if (res.status === 200) {
-            return res.data
-        }
+        return  await fetch(`${process.env.NEXT_PUBLIC_URL}/api/classes`,{cache:'no-store'}).then(res => res.json())
+
     } catch (e) {
         console.log(e)
     }
@@ -59,11 +55,9 @@ export async function getClasses() {
 
 export async function getClassesOptions() {
     try {
-        const res = await axios.get(`${process.env.NEXT_PUBLIC_URL}/api/classes`);
-        if (res.status === 200) {
-            const {classes} = res.data
+        const res = await fetch(`${process.env.NEXT_PUBLIC_URL}/api/classes` ,{cache:'no-store'});
+            const {classes} = await res.json()
             return classes.map(({_id, className}) => ({value: _id, label: className}))
-        }
     } catch (e) {
         console.log(e)
     }
@@ -71,10 +65,8 @@ export async function getClassesOptions() {
 
 export async function getClass(id) {
     try {
-        const res = await axios.get(`${process.env.NEXT_PUBLIC_URL}/api/classes/${id}`);
-        if (res.status === 200) {
-            return res.data
-        }
+        const res = await fetch(`${process.env.NEXT_PUBLIC_URL}/api/classes/${id}` ,{cache:'no-store'});
+        return res.json()
     } catch (e) {
         console.log(e)
     }

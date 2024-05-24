@@ -1,12 +1,18 @@
 import AddClassForm from '@/app/ui/AddClassForm/AddClassForm'
 import Heading from "@/app/ui/Heading/Heading";
-
+import {Card, CardBody} from "@nextui-org/react";
+export const metadata = {
+    title: 'Add Class',
+    description: 'Add a new class to the system.',
+}
 function page() {
   return (
-    <>
-      <Heading>Add Class</Heading>
-      <AddClassForm />
-    </>
+    <Card>
+      <CardBody>
+          <Heading>Add Class</Heading>
+          <AddClassForm />
+      </CardBody>
+    </Card>
   )
 }
 

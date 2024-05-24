@@ -25,3 +25,7 @@
     -moz-appearance: textfield !important;
   }
 }
+
+.initial {
+  text-overflow: unset;
+}

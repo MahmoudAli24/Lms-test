@@ -40,8 +40,7 @@ function EditClassForm({classData}) {
             newGroups.splice(selectedGroup, 1)
             setGroups(newGroups)
             const selectedGroupData = groups[selectedGroup]
-            console.log("selectedGroupData", selectedGroupData)
-            const req= await deleteGroup(selectedGroupData)
+            const req = await deleteGroup(selectedGroupData)
             console.log(req)
             onOpenChange()
         } catch (e) {
@@ -62,52 +61,60 @@ function EditClassForm({classData}) {
         e.preventDefault();
         formAction(newClassData)
     }}>
-        <Input
-            name="className"
-            type="text"
-            label="Class Name"
-            placeholder="Enter Class Name"
-            required
-            value={selectedClass}
-            onChange={(e) => setSelectedClass(e.target.value)}
-        />
-        {groups.map((group, index) => (<div
-            key={index}
-            className='flex flex-wrap items-center justify-center gap-3 mb-3'
-        >
-            <Input
-                className='w-full sm:w-1/2'
-                name={`group-${index}`}
-                type='text'
-                label={`Group ${index + 1}`}
-                placeholder={`Enter Group ${index + 1} Name`}
-                value={group.groupName}
-                onChange={(e) => {
-                    const newGroups = [...groups];
-                    newGroups[index].groupName = e.target.value;
-                    setGroups(newGroups);
-                }}
-                required
+        <div className="grid tablet:grid-cols-2 grid-cols-1 gap-3">
+            <div>
+                <Input
+                    name="className"
+                    type="text"
+                    label="Class Name"
+                    placeholder="Enter Class Name"
+                    required
+                    value={selectedClass}
+                    onChange={(e) => setSelectedClass(e.target.value)}
+                />
+            </div>
+            <div>
+                {groups.map((group, index) => (<div
+                    key={index}
+                    className='flex items-center justify-center space-x-3'
+                >
+                    <Input
+                        name={`group-${index}`}
+                        type='text'
+                        label={`Group ${index + 1}`}
+                        placeholder={`Enter Group ${index + 1} Name`}
+                        value={group.groupName}
+                        onChange={(e) => {
+                            const newGroups = [...groups];
+                            newGroups[index].groupName = e.target.value;
+                            setGroups(newGroups);
+                        }}
+                        isRequired
+                        className="mb-3"
 
-            />
-            {index > 0 && (<Button
-                type='button'
-                color='danger'
-                auto
-                onClick={() => handleRemoveGroup(index)}
-            >
-                Remove Group
-            </Button>)}
-        </div>))}
-        <Button type='button' color='secondary' auto onClick={handleAddGroup}>
+                    />
+                    {index > 0 && (<Button
+                        type='button'
+                        color='danger'
+                        auto
+                        onClick={() => handleRemoveGroup(index)}
+                    >
+                        Delete
+                    </Button>)}
+                </div>))}
+            </div>
+
+        </div>
+
+        <Button className="mr-2" type='button' color='secondary' auto onClick={handleAddGroup}>
             Add Group
         </Button>
         <SubmitButton/>
 
         {isOpen && (<RemoveGroupModal
-        isOpen={isOpen}
-        onOpenChange={onOpenChange}
-        handleDeleteConfirm={handleDeleteConfirm}
+            isOpen={isOpen}
+            onOpenChange={onOpenChange}
+            handleDeleteConfirm={handleDeleteConfirm}
         />)}
 
     </form>);

@@ -3,7 +3,10 @@ import {getClassesOptions} from "@/app/actions/classesActions";
 import {getGroupsOptions} from "@/app/actions/groupsActions";
 import EditAttendanceForm from "@/app/ui/EditAttendanceForm/EditAttendanceForm";
 import Heading from "@/app/ui/Heading/Heading";
-
+export const metadata = {
+    title: 'Edit Attendance',
+    description: 'Edit Attendance Page',
+}
 export default async function EditAttendancePage() {
     const classesOptions = await getClassesOptions();
     const groupsOptions = await getGroupsOptions();

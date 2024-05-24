@@ -9,7 +9,7 @@ import {
     Tooltip,
     useDisclosure
 } from "@nextui-org/react";
-import {useCallback, useState} from "react";
+import {useCallback, useEffect, useState} from "react";
 import {EyeIcon} from "@/app/ui/Icons/EyeIcon";
 import {EditIcon} from "@/app/ui/Icons/EditIcon";
 import {DeleteIcon} from "@/app/ui/Icons/DeleteIcon";
@@ -21,9 +21,11 @@ import {displayToast} from "@/app/ui/displayToast";
 export default function GroupTable({groups}) {
     const [selectedGroup, setSelectedGroup] = useState(null);
     const {isOpen, onOpen, onOpenChange} = useDisclosure();
+    const [groupsData, setGroupsData] = useState(groups||[]);
+
     const columns = [{name: "Name", uid: "groupName"}, {name: "Number of students", uid: "students_ids"} , {name: "Actions", uid: "actions"}];
     const renderCell = useCallback((item, columnKey) => {
-        const cellValue = groups[columnKey];
+        const cellValue = groupsData[columnKey];
         if (columnKey === "actions") {
             return (<div className='relative flex items-center gap-2'>
                 <Tooltip content='Details'>
@@ -34,14 +36,14 @@ export default function GroupTable({groups}) {
                         <EyeIcon/>
                     </Link>
                 </Tooltip>
-                <Tooltip content='Edit Student'>
+                <Tooltip content='Edit Group'>
                     <Link
-                        href={`/dashboard/students`}
+                        href={`/dashboard/classes/${item.classID}/edit`}
                         className='text-lg text-default-400 cursor-pointer active:opacity-50'>
                         <EditIcon/>
                     </Link>
                 </Tooltip>
-                <Tooltip color='danger' content='Delete Student'>
+                <Tooltip color='danger' content='Delete Group'>
                         <span className="text-lg text-danger cursor-pointer active:opacity-50"
                               onClick={() => handleDeleteClick(item)}>
                         <DeleteIcon/>
@@ -62,6 +64,20 @@ export default function GroupTable({groups}) {
         onOpen()
     };
 
+    useEffect(() => {
+        if (groupsData.length === 0) {
+            return <div className='flex justify-center items-center h-80'>
+                <h1 className='text-2xl text-default-500'>No groups found</h1>
+            </div>
+        } else if (groups === null) {
+            return <div className='flex justify-center items-center h-80'>
+                <h1 className='text-2xl text-default-500'>Loading...</h1>
+            </div>
+        } else if (groups.length > 0) {
+            setGroupsData(groups)
+        }
+
+    }, [groups , groupsData]);
     const handleDeleteConfirm = async () => {
         try {
             const req= await deleteGroup(selectedGroup)
@@ -88,7 +104,7 @@ export default function GroupTable({groups}) {
                         {column.name}
                     </TableColumn>)}
                 </TableHeader>
-                <TableBody items={groups}>
+                <TableBody items={groupsData}>
                     {(item) => (
                         <TableRow key={item._id}>
                             {(columnKey) => <TableCell>{renderCell(item, columnKey)}</TableCell>}

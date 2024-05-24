@@ -184,9 +184,16 @@ export async function DELETE(req, { params }) {
         if (!student) {
             return NextResponse.json({ message: "Student not found" });
         }
-        await Class.findOneAndUpdate({ code: student.class_id }, { $pull: { student_ids: student._id } }, { new: true });
+        // await Class.findOneAndUpdate({ code: student.class_id }, { $pull: { student_ids: student._id } }, { new: true });
+        await Class.findByIdAndUpdate(student.class_id, { $pull: { student_ids: student._id }})
 
-        await Group.findOneAndUpdate({ code: student.group_id }, { $pull: { student_ids: student._id } }, { new: true });
+        // await Group.findOneAndUpdate({ code: student.group_id }, { $pull: { student_ids: student._id } }, { new: true });
+        await Group.findByIdAndUpdate(student.group_id, { $pull: { student_ids: student._id }})
+
+        await Attendance.deleteMany({student:student._id})
+        await Homework.deleteMany({student:student._id})
+        await Exam.deleteMany({student_id:student._id})
+        await Vocabulary.deleteMany({student:student._id})
 
         await Student.findByIdAndDelete({ _id: student._id });
         return NextResponse.json({ message: "Student deleted successfully" });

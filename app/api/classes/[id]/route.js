@@ -4,9 +4,9 @@ import Group from "@/app/models/Group";
 import {NextResponse} from "next/server";
 
 export async function DELETE(req, {params}) {
+    try {
     const classCode = +params.id;
     await dbConnect();
-    try {
         const class_ = await Class.findOne({code: classCode});
         if (!class_) {
             return NextResponse.json({message: "Class not found"});
@@ -19,9 +19,9 @@ export async function DELETE(req, {params}) {
 }
 
 export async function GET(req, {params}) {
+    try {
     const classCode = params.id;
     await dbConnect();
-    try {
         const class_ = await Class.findById(classCode).select("-student_ids").populate("groups", "-class_id -__v");
         if (!class_) {
             return NextResponse.json({message: "Class not found"});
@@ -35,7 +35,6 @@ export async function GET(req, {params}) {
 export async function PATCH(req, {params}) {
     const classCode = params.id;
     const data = await req.json();
-    console.log("dataaaaaaaaaaa", data)
     await dbConnect();
     try {
         const {className, groups} = data;
@@ -59,8 +58,6 @@ export async function PATCH(req, {params}) {
 
                 if (existingGroup) {
                     await Group.findByIdAndUpdate({_id}, {groupName}, {new: true, runValidators: true});
-                } else {
-                    console.log('Group not found');
                 }
             } else if (!_id) {
                 // If groupId is not provided, create a new group
@@ -71,7 +68,6 @@ export async function PATCH(req, {params}) {
                 await Class.findByIdAndUpdate({_id: classCode}, {
                     $push: {groups: newGroup._id}
                 }, {new: true});
-                console.log('Group created')
             }
             return group;
         }));

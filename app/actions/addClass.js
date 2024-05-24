@@ -12,7 +12,5 @@ export default async function addClass(formData) {
         resolve(true);
       }, 100);
     });
-    console.log("data =>", data);
-    console.log("res =>", res.status);
   } catch (error) {}
 }

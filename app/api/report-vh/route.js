@@ -12,6 +12,7 @@ export async function GET(req) {
         const homeworkStatus = req.nextUrl.searchParams.get("homework_status");
         const page = +req.nextUrl.searchParams.get("page");
         const rowsPerPage = +req.nextUrl.searchParams.get("rowsPerPage");
+        let vocabulary, homework;
 
         if (date_report) {
             const skip = (page - 1) * rowsPerPage;
@@ -27,7 +28,7 @@ export async function GET(req) {
                 status: homeworkStatus === "true"
             };
 
-            const vocabulary = await Vocabulary.find(vocabularyQuery)
+            vocabulary = await Vocabulary.find(vocabularyQuery)
                 .select("-__v -date_report -group")
                 .populate({
                     path: "student",
@@ -44,7 +45,7 @@ export async function GET(req) {
                     ]
                 })
 
-            const homework = await Homework.find(homeworkQuery)
+            homework = await Homework.find(homeworkQuery)
                 .select("-__v -date_report -group")
                 .populate({
                     path: "student",
@@ -57,7 +58,7 @@ export async function GET(req) {
 
             // Extract students who have both vocabulary and homework with the specified statuses
             const studentsWithSameStatus = vocabulary
-                .filter((voc) => homework.find((hw) => hw.student.code === voc.student.code))
+                .filter((voc) => homework.some((hw) => hw.student.code === voc.student.code))
                 .map((voc) => voc.student)
 
             const paginatedStudents = studentsWithSameStatus.slice(skip, skip + rowsPerPage);
@@ -70,3 +71,4 @@ export async function GET(req) {
     }
 }
 
+export async function POST(req) {}

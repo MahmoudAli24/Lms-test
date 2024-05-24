@@ -7,7 +7,7 @@ import Exams from "@/app/ui/StudentTabs/Exams/Exams";
 
 export default function StudentTabs({vocabulary, homework, examGrades, attendance}) {
     return(
-        <Tabs>
+        <Tabs color={"primary"}>
             <Tab title="Attendance">
                 <Attendance attendance={attendance}/>
             </Tab>

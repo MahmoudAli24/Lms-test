@@ -1,7 +1,6 @@
 import ClassesTable from "@/app/ui/ClassesTable/ClassesTable";
 import { Card, CardBody } from "@nextui-org/react";
 import Heading from "@/app/ui/Heading/Heading";
-
 function page() {
   return (
     <Card>

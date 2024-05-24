@@ -5,54 +5,61 @@ import Attendance from "@/app/models/Attendance";
 import Vocabulary from "@/app/models/Vocabulary";
 import Student from "@/app/models/Student";
 
-async function checkAndCreateRecord(Model, student, group_id, date, grade, statusKey) {
-    // Check if record already exists for the student on the given date
-    const existingRecord = await Model.findOne({
-        student: student._id, group: group_id, date,
-    });
-
-    if (existingRecord) {
-        // Handle case where record already exists
-        console.log(`Record already exists for student ${student.code} on ${date}`);
-        return;
-    }
-
-    // Create new record
-    const newRecord = new Model({
-        student: student._id, group: group_id, date, [statusKey]: grade,
-    });
-
-    // Save record
-    await newRecord.save();
-
-    // Check if the record's _id is not in the student's array
-    if (!student[Model.modelName.toLowerCase()].includes(newRecord._id)) {
-        // Save _id of the record to the student data
-        student[Model.modelName.toLowerCase()].push(newRecord._id);
-        await student.save();
-    }
-}
-
 export async function POST(req) {
+    await dbConnect();
     try {
-        const {group_id, date, attendanceData} = await req.json();
+        const { group_id, date, attendanceData } = await req.json();
 
-        await dbConnect();
+        // Prepare records for bulk insertion
+        const attendanceRecords = attendanceData.map(data => ({
+            student: data.id,
+            group: group_id,
+            date,
+            status: data.attendance,
+        }));
+        const vocabularyRecords = attendanceData.map(data => ({
+            student: data.id,
+            group: group_id,
+            date,
+            status: data.voc,
+        }));
+        const homeworkRecords = attendanceData.map(data => ({
+            student: data.id,
+            group: group_id,
+            date,
+            status: data.homework,
+        }));
 
-        for (const {attendance, voc, homework, code} of attendanceData) {
-            const student = await Student.findOne({code});
+        // Perform bulk insert operations
+        const [attendanceInserts, vocabularyInserts, homeworkInserts] = await Promise.all([
+            Attendance.insertMany(attendanceRecords),
+            Vocabulary.insertMany(vocabularyRecords),
+            Homework.insertMany(homeworkRecords),
+        ]);
 
-            await checkAndCreateRecord(Attendance, student, group_id, date, attendance, 'status');
-            await checkAndCreateRecord(Vocabulary, student, group_id, date, voc, 'status');
-            await checkAndCreateRecord(Homework, student, group_id, date, homework, 'status');
-        }
+        // Prepare updates for students
+        const studentUpdates = attendanceData.map(async data => {
+            const student = await Student.findById(data.id);
+            if (!student) return; // Skip if student not found
 
-        return Response.json({message: "Attendance created successfully"});
+            // Push new record IDs to student's arrays
+            student.attendance.push(...attendanceInserts.filter(ar => ar.student.toString() === data.id).map(ar => ar._id));
+            student.vocabulary.push(...vocabularyInserts.filter(vr => vr.student.toString() === data.id).map(vr => vr._id));
+            student.homework.push(...homeworkInserts.filter(hr => hr.student.toString() === data.id).map(hr => hr._id));
+
+            await student.save();
+        });
+
+        // Wait for all student updates to complete
+        await Promise.all(studentUpdates);
+
+        return Response.json({ message: "Records created successfully" });
     } catch (error) {
-        console.error("Error creating attendance:", error);
-        return {status: 500, body: {message: "Internal Server Error"}};
+        console.error("Error:", error);
+        return Response.json({ message: "Internal Server Error" });
     }
 }
+
 
 // get attendance
 
@@ -122,35 +129,38 @@ export async function PATCH(req) {
     try {
         await dbConnect();
 
-        const {group_id, date, attendanceData} = await req.json();
+        const {group_id, date, attendanceData ,oldDate} = await req.json();
 
         for (const {attendance, voc, homework, code} of attendanceData) {
             const student = await Student.findOne({code});
 
             const attendanceRecord = await Attendance.findOne({
-                student: student._id, group: group_id, date,
+                student: student._id, group: group_id, date:oldDate,
             });
 
             if (attendanceRecord) {
                 attendanceRecord.status = attendance;
+                attendanceRecord.date = date;
                 await attendanceRecord.save();
             }
 
             const vocabularyRecord = await Vocabulary.findOne({
-                student: student._id, group: group_id, date,
+                student: student._id, group: group_id, date:oldDate,
             });
 
             if (vocabularyRecord) {
                 vocabularyRecord.status = voc;
+                vocabularyRecord.date = date;
                 await vocabularyRecord.save();
             }
 
             const homeworkRecord = await Homework.findOne({
-                student: student._id, group: group_id, date,
+                student: student._id, group: group_id, date:oldDate,
             });
 
             if (homeworkRecord) {
                 homeworkRecord.status = homework;
+                homeworkRecord.date = date;
                 await homeworkRecord.save();
             }
 
